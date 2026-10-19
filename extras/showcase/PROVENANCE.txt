@@ -1,0 +1,39 @@
+JEV Trading Command Center - original application showcase
+
+The video records the actual browser-rendered JEV application. All displayed
+market/account/agent data in this recording are deliberately synthetic DEMO
+data. The recorded demo used no live funds or real account, made no exchange
+or JEV API request, and launched no paid/native AI worker. PASS/WAIT/rejection
+states are demonstration cases, not investment results or profit claims.
+
+Source: 1,541 selected browser screencast JPEGs with original per-frame timestamps,
+from 1,561 captured frames. The first 20 stale initial stage frames were omitted;
+the opening hold and thumbnail use the genuine first clean captured frame.
+No pixels were masked, painted over, or replaced with invented UI.
+Three actual captured sections: the original 3D dashboard and moving pets;
+JEV pass/wait/risk rejection actions; work/animation pause and resume controls.
+Source timestamps determine variable frame timing within each section.
+Sections have intentional cuts. The brief opening and closing title holds
+use the actual first/last captured screenshots, with no invented UI frames.
+The entire application viewport is preserved inside a small title/footer
+matte; no browser chrome, desktop, microphone, or real account was recorded.
+
+Music: Neon Circuit, an original 116 BPM instrumental synthesized from scratch
+by music_source.py. No third-party song, sample, loop, or paid music service.
+See ../music/PROVENANCE.txt and ../music/LICENSE.txt. Overlay text uses the installed
+Windows Consolas font; the font file itself is not redistributed.
+
+Export: 1920 x 1080, H.264 / AAC, 30 fps, CRF 18, faststart, source metadata
+removed. Original variable capture timing is sampled to 30 fps using duplicate
+frames where needed, without motion interpolation. The DEMO label is always
+visible. jev-showcase.qa.json retains timing, source-frame fingerprints,
+music/video hashes, encoding details and measured audio verification.
+
+Re-edit with your own reviewed, privacy-safe captured JPEG/JSON frames:
+python showcase_source.py --frames YOUR_FRAMES_FOLDER --segments YOUR_MANIFEST.json --music music.wav --output jev-showcase.mp4
+Manifest example: {"privacy_confirmed":true,"data_mode":"synthetic","segments":[{"folder":"stage","label":"Dashboard"},{"folder":"workflow","label":"Decisions"},{"folder":"controls","label":"Controls"}]}
+Each JPEG must have a same-stem JSON with numeric epoch-seconds "timestamp"
+and integer "sequence". Keep raw captures private until separately reviewed.
+The editor requires Python, FFmpeg/ffprobe, and Windows Consolas. It refuses
+to overwrite an existing final output. Project licensing covers this original
+recording and editing helper; music has the explicit MIT license above.

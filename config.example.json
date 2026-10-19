@@ -1,0 +1,7 @@
+{
+  "initial_capital": 100000.0,
+  "jev_model": "jev-latest",
+  "use_risk_control": true,
+  "local_decider_enabled": false,
+  "external_analysis_enabled": false
+}

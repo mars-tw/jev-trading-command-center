@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-label="halo ring">
+  <title>Halo ring (procedural, original to this project)</title>
+  <defs>
+    <radialGradient id="halo" cx="50%" cy="50%" r="50%">
+      <stop offset="52%" stop-color="#37e0ff" stop-opacity="0"/>
+      <stop offset="74%" stop-color="#37e0ff" stop-opacity=".55"/>
+      <stop offset="86%" stop-color="#8b5cff" stop-opacity=".40"/>
+      <stop offset="100%" stop-color="#8b5cff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <circle cx="128" cy="128" r="126" fill="url(#halo)"/>
+  <circle cx="128" cy="128" r="104" fill="none" stroke="#dffaff" stroke-opacity=".30" stroke-width="1.5"/>
+</svg>

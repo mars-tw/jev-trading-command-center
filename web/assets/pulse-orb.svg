@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-label="decision pulse orb">
+  <title>Pulse orb (procedural, original to this project)</title>
+  <defs>
+    <radialGradient id="core" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="1"/>
+      <stop offset="22%" stop-color="#9ef6ff" stop-opacity=".95"/>
+      <stop offset="48%" stop-color="#37e0ff" stop-opacity=".72"/>
+      <stop offset="72%" stop-color="#6b5cff" stop-opacity=".38"/>
+      <stop offset="100%" stop-color="#1a0f3a" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="rim" cx="50%" cy="50%" r="50%">
+      <stop offset="62%" stop-color="#8b5cff" stop-opacity="0"/>
+      <stop offset="86%" stop-color="#ff2ea6" stop-opacity=".30"/>
+      <stop offset="100%" stop-color="#ff2ea6" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <circle cx="128" cy="128" r="126" fill="url(#core)"/>
+  <circle cx="128" cy="128" r="126" fill="url(#rim)"/>
+  <circle cx="128" cy="128" r="62" fill="none" stroke="#dffaff" stroke-opacity=".45" stroke-width="2"/>
+  <circle cx="128" cy="128" r="92" fill="none" stroke="#9c8bff" stroke-opacity=".28" stroke-width="1.5"/>
+  <circle cx="106" cy="104" r="22" fill="#ffffff" fill-opacity=".18"/>
+</svg>
