@@ -45,3 +45,7 @@ soundfont or paid music-generation service was used. The music source,
 provenance and its MIT license accompany the release. NumPy, Python and
 FFmpeg are external production tools and retain their own licenses; their
 binaries are not redistributed here.
+
+## OrbitControls for the v0.3 view
+
+`web/orbit-controls.js` and `web/vendor/three/examples/jsm/controls/OrbitControls.js` contain Three.js 0.186.1 OrbitControls under the same MIT license. The upstream source SHA-256 is `3d79d07ecb686b4e5d93232eedab255331c1beef711e13164eaa1f68655a5f2b`; delivery adds the preserved Three.js MIT header. The vendor inventory records both the source and delivered hashes.

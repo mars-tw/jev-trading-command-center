@@ -36,7 +36,7 @@ export function createCinematicCore(THREE, world, options = {}) {
   const track = (g, m) => { if (g) geos.push(g); if (m) mats.push(m); return m; };
   const addMat = (m) => { m.depthWrite = false; m.blending = THREE.AdditiveBlending; m.transparent = true; return track(null, m); };
   const col = new THREE.Color(0x4aa8ff);
-  const decorativeScale=options.graphMode===true?.3:1;
+  let decorativeScale=options.graphMode===true?.3:1;
   let phase = 'idle', active = 0, tier = 2, storedTime = 0, lastDt = 0, qLevel = 2, power = 0.22;
   const moteN = Math.floor(clamp(fin(options.motes, 96), 16, 192));
 
@@ -129,7 +129,7 @@ export function createCinematicCore(THREE, world, options = {}) {
     const rgb = st.color; if (Array.isArray(rgb) && rgb.length >= 3) tmpC.setRGB(fin(rgb[0]), fin(rgb[1]), fin(rgb[2]));
     rings.forEach((r) => { r.material.color.copy(tmpC); r.material.opacity = (0.18 + power * 0.35)*decorativeScale; });
     tubes.forEach((t) => { t.material.color.copy(tmpC); t.material.opacity = (0.12 + power * 0.28)*decorativeScale; });
-    ribbons.forEach((r) => { const u = r.material.uniforms; u.uPower.value = power; u.uColor.value.copy(tmpC); });
+    ribbons.forEach((r) => { const u = r.material.uniforms; u.uPower.value = power; u.uDecor.value=decorativeScale; u.uColor.value.copy(tmpC); });
     mMat.color.copy(tmpC); mMat.opacity = (0.3 + power * 0.45)*decorativeScale;
     seedWire.material.color.copy(tmpC).lerp(seedWhite,.68);seedWire.material.opacity=.38+power*.28;seedCorona.material.color.copy(tmpC);seedCorona.material.opacity=.22+power*.16;
   }
@@ -179,7 +179,7 @@ export function createCinematicCore(THREE, world, options = {}) {
   }
 
   setQuality(2);
-  return { update, setQuality, readback, dispose };
+  return { setGraphMode(value){decorativeScale=value===true?.3:1;applyState({});}, update, setQuality, readback, dispose };
 }
 
 export function initCoreDock(doc, hostWindow) {

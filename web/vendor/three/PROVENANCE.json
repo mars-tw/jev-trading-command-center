@@ -74,6 +74,14 @@
       "source": "https://cdn.jsdelivr.net/npm/three@0.186.1/package.json",
       "bytes": 3672,
       "sha256": "f9c474a27c920b9435353a6235968f4453436bee0444fac7e5fd289c8fa463de"
+    },
+    {
+      "path": "examples/jsm/controls/OrbitControls.js",
+      "source": "https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/controls/OrbitControls.js",
+      "upstream_sha256": "3d79d07ecb686b4e5d93232eedab255331c1beef711e13164eaa1f68655a5f2b",
+      "transform": "Three.js MIT header prepended",
+      "bytes": 41887,
+      "sha256": "f777474f12bca19c9d50d59aaceaed5856ca838d348e9d3cef81d36a711d43a1"
     }
   ]
 }

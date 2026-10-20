@@ -3,6 +3,7 @@ import { createCinematicCore, coreVisualBudget, corePhase, initCoreDock } from "
 // Three.js 沉浸視覺：電漿決策球 + 藍紫粒子環面軌道核心。資料由 classic script 寫入 window.LIVE。
 import * as THREE from "three";
 import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
+import { OrbitControls } from "./orbit-controls.js";
 import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
 import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
 
@@ -121,6 +122,12 @@ function makeRing(canvas) {
   let ringComposer=null;
   const camera = new THREE.PerspectiveCamera(48, 2, 0.1, 100);
   camera.position.set(0, 2.6, 7.4); camera.lookAt(0, 0, 0);
+  const controls=new OrbitControls(camera,canvas);controls.enabled=true;controls.enableDamping=true;controls.dampingFactor=.075;controls.enablePan=false;controls.rotateSpeed=.65;controls.zoomSpeed=.75;controls.minDistance=3.4;controls.maxDistance=14;controls.minPolarAngle=.12;controls.maxPolarAngle=Math.PI-.12;controls.target.set(0,0,0);controls.saveState();canvas.style.touchAction='none';
+  let suppressNodeClickUntil=0,pointerStart=null;
+  canvas.parentElement.addEventListener('pointerdown',event=>{pointerStart={x:event.clientX,y:event.clientY};},true);
+  canvas.parentElement.addEventListener('pointermove',event=>{if(pointerStart&&Math.hypot(event.clientX-pointerStart.x,event.clientY-pointerStart.y)>6)suppressNodeClickUntil=performance.now()+350;},true);
+  window.addEventListener('pointerup',()=>{pointerStart=null;});window.addEventListener('pointercancel',()=>{pointerStart=null;});
+  controls.addEventListener('start',()=>{window.__camMode='orbit';});
   const world = new THREE.Group(); world.rotation.x = 0.38; world.scale.setScalar(1.12); scene.add(world);
   const R = 2.35, TUBE = 0.78;
   const torusPos = (u, v, rr) => new THREE.Vector3(
@@ -144,7 +151,7 @@ function makeRing(canvas) {
     }
     geo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
     geo.setAttribute("color", new THREE.BufferAttribute(col, 3));
-    const mat = new THREE.PointsMaterial({ size, map: spriteTex, vertexColors: true, transparent: true, opacity: 0.20,
+    const mat = new THREE.PointsMaterial({ size, map: spriteTex, vertexColors: true, transparent: true, opacity: 0.72,
       blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: true });
     const pts = new THREE.Points(geo, mat); world.add(pts);
     return { geo, seed, count, activeCount:count, mat };
@@ -158,10 +165,10 @@ function makeRing(canvas) {
   // Whole original atlas pets travel on stable declared graph channels.
   const workerSprites=new Map(),workerTextures=new Map(),petPhaseMemory=new Map(),workerScene=new THREE.Scene(),workerRoot=new THREE.Group();workerScene.add(workerRoot);
   const graphCamera=new THREE.OrthographicCamera(0,900,500,0,.1,10);graphCamera.position.z=5;
-  const decisionGraph=createDecisionGraph(THREE,canvas.parentElement,workerScene,{readState:()=>({live:window.LIVE,workerState:window.__lineWorkersState,lab:window.__strategyLabState,demoPage:window.__JEV_DEMO__===true}),onInvalidate:()=>{if(ringComposer&&!document.hidden){updateLineWorkers(0);renderFrozen();}}});
+  const decisionGraph=createDecisionGraph(THREE,canvas.parentElement,workerScene,{mode:'torus',canActivate:()=>performance.now()>=suppressNodeClickUntil,readState:()=>({live:window.LIVE,workerState:window.__lineWorkersState,lab:window.__strategyLabState,demoPage:window.__JEV_DEMO__===true}),onInvalidate:()=>{if(ringComposer&&!document.hidden){updateLineWorkers(0);renderFrozen();}}});
   function petTexture(alias,view,frame,working){const key=[alias,view,frame,working].join('|');let texture=workerTextures.get(key);if(!texture){texture=new THREE.CanvasTexture(window.LineWorkers.makeTextureCanvas(alias,view,frame,working));texture.colorSpace=THREE.SRGBColorSpace;workerTextures.set(key,texture);}const revision=Number(window.LineWorkers.artRevision?.()||0);if(texture.userData.artRevision!==revision){texture.needsUpdate=true;texture.userData.artRevision=revision;}return texture;}
   window.LineWorkers?.onArtChange?.(()=>{for(const texture of workerTextures.values())texture.needsUpdate=true;if(ringComposer&&!document.hidden)renderFrozen();});
-  const petTarget=new THREE.Vector3(),petAhead=new THREE.Vector3();
+  const petTarget=new THREE.Vector3(),petAhead=new THREE.Vector3(),petProjected=new THREE.Vector3(),aheadProjected=new THREE.Vector3(),zeroRotation=new THREE.Euler();
   function updateLineWorkers(dt,reproject=false){
     const api=window.LineWorkers,state=window.__lineWorkersState;if(!api)return;const items=state&&Date.now()<state.valid_until?state.workers:[],keep=new Set(),moving=dt>0&&api.motionAllowed(),w=canvas.clientWidth||900,h=canvas.clientHeight||500;
     items.slice(0,12).forEach((worker,i)=>{keep.add(worker.id);let sp=workerSprites.get(worker.id),created=false,restored=false;
@@ -172,24 +179,28 @@ function makeRing(canvas) {
       d.u=nextU;decisionGraph.sample(d.routeId,d.u,petTarget);
       if(d.transition&&moving){d.transition.age+=Math.min(.1,dt);const a=Math.min(1,d.transition.age/.55),k=a*a*(3-2*a);sp.position.copy(d.transition.from).lerp(petTarget,k);if(a===1)d.transition=null;}
       else if(moving||created&&!restored||reproject)sp.position.copy(petTarget);
-      const size=Math.max(32,Math.min(46,w*.06));sp.scale.set(size,size,1);sp.material.opacity=worker.working?1:.64;
-      Object.assign(d,{workerId:worker.id,source:worker.source,alias:worker.alias,name:worker.name,action:worker.action,label:worker.label,working:worker.working,job:worker.job,lane:worker.lane,pid:worker.pid,native_process:worker.native_process,demo_working:worker.demo_working,routePending:nextRoute!==d.routeId,renderer:'declared-graph'});
+      const size=Math.max(32,Math.min(46,w*.06)),torus=decisionGraph.mode()==='torus',spriteSize=torus?size*2*Math.tan(THREE.MathUtils.degToRad(camera.fov)/2)/h/world.scale.y:size;if(sp.material.sizeAttenuation===torus){sp.material.sizeAttenuation=!torus;sp.material.needsUpdate=true;}sp.scale.set(spriteSize,spriteSize,1);sp.material.opacity=worker.working?1:.64;
+      Object.assign(d,{workerId:worker.id,source:worker.source,alias:worker.alias,name:worker.name,action:worker.action,label:worker.label,working:worker.working,job:worker.job,lane:worker.lane,pid:worker.pid,native_process:worker.native_process,demo_working:worker.demo_working,routePending:nextRoute!==d.routeId,renderer:decisionGraph.mode()==='torus'?'torus-world':'declared-graph'});
     });
     for(const [id,sp]of workerSprites)if(!keep.has(id)){const d=sp.userData;petPhaseMemory.set(id,{u:d.u,view:d.view,frame:d.frame,routeId:d.routeId,position:sp.position.clone(),at:Date.now()});while(petPhaseMemory.size>64)petPhaseMemory.delete(petPhaseMemory.keys().next().value);workerRoot.remove(sp);sp.material.dispose();workerSprites.delete(id);}
   }
   function renderLineWorkers(){
     const api=window.LineWorkers;if(!api)return;const points=[],now=performance.now(),bucket=Math.floor(now/140),width=canvas.clientWidth||900,height=canvas.clientHeight||500;
+    const torus=decisionGraph.mode()==='torus';workerScene.rotation.copy(torus?world.rotation:zeroRotation);workerScene.scale.setScalar(torus?world.scale.x:1);workerScene.updateMatrixWorld(true);if(torus)decisionGraph.project(camera);
     for(const sp of workerSprites.values()){
-      const d=sp.userData;decisionGraph.sample(d.routeId,d.u+.012,petAhead);const view=api.viewFor(petAhead.x-sp.position.x,-(petAhead.y-sp.position.y)),busy=d.working&&(d.source==='CLI'&&d.native_process===true||d.source==='DEMO'&&d.demo_working===true),moving=api.motionAllowed(),revision=Number(api.artRevision?.()||0);
+      const d=sp.userData;decisionGraph.sample(d.routeId,d.u+.012,petAhead);if(torus){workerRoot.localToWorld(petProjected.copy(sp.position)).project(camera);workerRoot.localToWorld(aheadProjected.copy(petAhead)).project(camera);}else{petProjected.copy(sp.position);aheadProjected.copy(petAhead);}const view=api.viewFor(aheadProjected.x-petProjected.x,-(aheadProjected.y-petProjected.y)),busy=d.working&&(d.source==='CLI'&&d.native_process===true||d.source==='DEMO'&&d.demo_working===true),moving=api.motionAllowed(),revision=Number(api.artRevision?.()||0);
       if(!d.appearanceKey||(moving&&d.artBucket!==bucket)||d.artWorking!==busy||d.artAlias!==d.alias||d.artRevision!==revision){d.view=moving||!d.appearanceKey?view:d.view;d.frame=moving||!d.appearanceKey?api.frameFor(now):d.frame;d.artBucket=bucket;d.artWorking=busy;d.artAlias=d.alias;d.artRevision=revision;d.appearanceKey=[d.alias,d.view,d.frame,busy].join('|');sp.material.map=petTexture(d.alias,d.view,d.frame,busy);}
-      d.screenX=sp.position.x;d.screenY=height-sp.position.y;points.push({id:d.workerId,x:d.screenX,y:d.screenY});
+      d.screenX=torus?(petProjected.x+1)*width/2:sp.position.x;d.screenY=torus?(1-petProjected.y)*height/2:height-sp.position.y;points.push({id:d.workerId,x:d.screenX,y:d.screenY});
     }
-    const autoClear=renderer.autoClear;renderer.autoClear=false;renderer.clearDepth();renderer.render(workerScene,graphCamera);renderer.autoClear=autoClear;api.placeLabels(points);
+    const autoClear=renderer.autoClear;renderer.autoClear=false;renderer.clearDepth();renderer.render(workerScene,torus?camera:graphCamera);renderer.autoClear=autoClear;api.placeLabels(points);
     window.__lineWorkerReadback=[...workerSprites.values()].map(sp=>({...sp.userData,transition:sp.userData.transition?{age:sp.userData.transition.age}:null,position:sp.position.toArray(),textureVersion:sp.material.map?.version,textureReady:sp.material.map?.image?.dataset?.ready,textureSource:sp.material.map?.image?.dataset?.source}));window.__decisionGraphReadback=decisionGraph.readback();
   }
   function renderFrozen(){if(!ringComposer)return;const g=decisionGraph.readback(),data=window.LIVE;const cs=corePhase(data,[],g.mainFresh);dock?.setPhase(cs);coreAura.update(0,coreTime,cs,0);decisionGraph.tick(0);window.__coreVisualReadback={...(window.__coreVisualReadback||{}),...coreAura.readback(),coreTime,mainFresh:g.mainFresh};ringComposer.render();renderLineWorkers();}
 
-  const graphDecor=decisionGraph.enabled?.3:1;
+  let graphDecor=1;
+  const helixRoot=new THREE.Group();world.add(helixRoot);const helices=[];
+  for(let k=0;k<16;k++){const points=[];for(let j=0;j<=192;j++){const u=j/192*Math.PI*2,v=u*(2+k%4)+k*.73;points.push(torusPos(u,v,TUBE*(.93+.06*Math.sin(k))));}const line=new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(points),new THREE.LineBasicMaterial({color:[0x258bdf,0x8b65e8,0x5acfe7,0xb69861][k%4],transparent:true,opacity:.2+(k%3)*.035,blending:THREE.AdditiveBlending,depthWrite:false}));line.userData.decorative=true;line.userData.spin=(k%2?1:-1)*(.025+k*.002);helixRoot.add(line);helices.push(line);}
+  function helixQuality(tier){helices.forEach((line,i)=>line.visible=i<(tier===0?6:tier===1?10:16));}
   // 絲線環（沿管面緯線）+ 中心輝光，強化中空立體感
   const filaments = [];
   for (let k = 0; k < 3; k++) {
@@ -201,18 +212,13 @@ function makeRing(canvas) {
   }
   const centerGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: spriteTex, color: 0x6a5cff, transparent: true, opacity: 0.30, blending: THREE.AdditiveBlending, depthWrite: false }));
   centerGlow.scale.set(4.6, 4.6, 1); world.add(centerGlow);
-  const coreAura=createCinematicCore(THREE,world,{mainRadius:R,tubeRadius:TUBE,motes:budget.motes,spriteTex,graphMode:decisionGraph.enabled});
+  const coreAura=createCinematicCore(THREE,world,{mainRadius:R,tubeRadius:TUBE,motes:budget.motes,spriteTex,graphMode:false});
   let qualityTier=budget.tier,slowFrames=0,coreTime=0,lastCoreReadback=0;
   coreAura.setQuality(qualityTier);
-  let drag = null;
-  canvas.addEventListener("pointerdown", e => { drag = { x: e.clientX, y: e.clientY }; });
-  let parX = 0, parY = 0, parTX = 0, parTY = 0;
-  canvas.addEventListener("pointermove", e => { const r = canvas.getBoundingClientRect(); parTX = ((e.clientX - r.left) / r.width - 0.5); parTY = ((e.clientY - r.top) / r.height - 0.5); });
-  window.addEventListener("pointermove", e => { if (drag && window.__camMode === "fixed") { world.rotation.y += (e.clientX - drag.x) * 0.005; world.rotation.x += (e.clientY - drag.y) * 0.003; drag = { x: e.clientX, y: e.clientY }; } });
-  window.addEventListener("pointerup", () => drag = null);
+  helixQuality(qualityTier);
   function resize() {
     const w = canvas.clientWidth || 900, h = canvas.clientHeight || 430;
-    renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
+    renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();if(!ringComposer)homeCamera();
     graphCamera.right=w;graphCamera.top=h;graphCamera.updateProjectionMatrix();decisionGraph.resize(w,h);updateLineWorkers(0,true);ringComposer?.setSize(w,h);
     if(ringComposer&&document.body.classList.contains("noanim"))renderFrozen();
   }
@@ -221,6 +227,13 @@ function makeRing(canvas) {
   ringComposer=composer;
   composer.addPass(new RenderPass(scene, camera));
   composer.addPass(new UnrealBloomPass(new THREE.Vector2(900, 430), 0.62, 0.32, 0.48));
+  const viewTools=document.createElement('div');viewTools.className='dg-view-tools';viewTools.setAttribute('role','group');viewTools.setAttribute('aria-label','舞台視角');
+  const modeButtons=new Map();for(const [mode,label]of [['torus','星環'],['organization','組織圖']]){const button=document.createElement('button');button.type='button';button.textContent=label;button.dataset.visualMode=mode;button.setAttribute('aria-pressed',String(mode==='torus'));button.addEventListener('click',()=>setViewMode(mode));viewTools.appendChild(button);modeButtons.set(mode,button);}
+  const resetView=document.createElement('button');resetView.type='button';resetView.textContent='重設視角';resetView.addEventListener('click',()=>{window.__camMode='orbit';homeCamera();renderFrozen();});viewTools.appendChild(resetView);const viewHint=document.createElement('span');viewHint.textContent='拖曳旋轉 · 滾輪／雙指縮放';viewTools.appendChild(viewHint);canvas.parentElement.insertAdjacentElement('beforebegin',viewTools);
+  function setViewMode(mode){decisionGraph.setMode(mode);const torus=decisionGraph.mode()==='torus';graphDecor=torus?1:.3;helixRoot.visible=torus;for(const cloud of [cloudA,cloudB])cloud.mat.opacity=torus?.72:.2;coreAura.setGraphMode(!torus);for(const [name,button]of modeButtons)button.setAttribute('aria-pressed',String(name===decisionGraph.mode()));viewHint.textContent=torus?'拖曳旋轉 · 滾輪／雙指縮放':'固定流程排列 · 點選節點看詳情';for(const sp of workerSprites.values())sp.userData.transition=null;for(const held of petPhaseMemory.values())decisionGraph.sample(held.routeId,held.u,held.position);updateLineWorkers(0,true);renderFrozen();}
+  controls.addEventListener('change',()=>{if(ringComposer&&!document.hidden&&document.body.classList.contains('noanim'))renderFrozen();});
+  function homeCamera(){const d=Math.min(controls.maxDistance,Math.max(Math.hypot(2.6,7.4),4/(Math.tan(THREE.MathUtils.degToRad(camera.fov)/2)*camera.aspect))),f=d/Math.hypot(2.6,7.4);camera.position.set(0,2.6*f,7.4*f);controls.target.set(0,0,0);controls.update();controls.saveState();}
+  window.JevVisualControls={setMode:setViewMode,reset:()=>resetView.click(),readback:()=>({mode:decisionGraph.mode(),enabled:controls.enabled,damping:controls.enableDamping,viewMode:decisionGraph.mode(),zoom:camera.zoom,ringCount:coreAura.readback().ringCount,position:camera.position.toArray(),quaternion:camera.quaternion.toArray(),distance:camera.position.distanceTo(controls.target),minDistance:controls.minDistance,maxDistance:controls.maxDistance,worldRotation:world.rotation.toArray().slice(0,3),helixCount:helices.filter(l=>l.visible&&helixRoot.visible).length,helixCap:16,particleCap:4096})};
   // 鏡頭巡航：全景 -> 推近 -> 孔洞近景 -> 斜側 -> 拉回（平滑加減速 + 停留）
   const KEYS = [
     { p: [0, 2.6, 7.4], dwell: 3.0 }, { p: [0, 1.5, 4.8], dwell: 2.0 },
@@ -254,7 +267,7 @@ function makeRing(canvas) {
     if (document.body.classList.contains("noanim")||document.hidden) return;
     _fpsFrames++;
     const _n = performance.now();
-    if (_n - _fpsT0 >= 1000) { window.__fps = Math.round(_fpsFrames * 1000 / (_n - _fpsT0)); _fpsFrames = 0; _fpsT0 = _n;slowFrames=window.__fps<28?slowFrames+1:0;if(slowFrames>=2&&qualityTier>0){qualityTier--;slowFrames=0;const factor=qualityTier===0?.45:.72;for(const cloud of [cloudA,cloudB]){cloud.activeCount=Math.max(24,Math.floor(cloud.count*factor));cloud.geo.setDrawRange(0,cloud.activeCount);}coreAura.setQuality(qualityTier);} }
+    if (_n - _fpsT0 >= 1000) { window.__fps = Math.round(_fpsFrames * 1000 / (_n - _fpsT0)); _fpsFrames = 0; _fpsT0 = _n;slowFrames=window.__fps<28?slowFrames+1:0;if(slowFrames>=2&&qualityTier>0){qualityTier--;slowFrames=0;const factor=qualityTier===0?.45:.72;for(const cloud of [cloudA,cloudB]){cloud.activeCount=Math.max(24,Math.floor(cloud.count*factor));cloud.geo.setDrawRange(0,cloud.activeCount);}coreAura.setQuality(qualityTier);helixQuality(qualityTier);} }
     const rawDt=Math.min(clock.getDelta(),0.05),allowCoreMotion=window.LineWorkers?.motionAllowed?.()??!reducedCore,dt=allowCoreMotion?rawDt:0;coreTime+=dt;const t=coreTime;
     updateLineWorkers(rawDt);
     const fx = window.__coreFX || { kind: "", at: 0 };
@@ -275,6 +288,7 @@ function makeRing(canvas) {
       pos.needsUpdate = true;
       if (fx.kind === "reject" && fxBoost > 0) cloud.mat.color.set(0xff9db4);
     }
+    helices.forEach(line=>{line.rotation.y+=dt*line.userData.spin;});
     filaments.forEach((f, i) => { f.ln.rotation.z += dt * 0.05 * f.dir; f.ln.material.opacity = (0.13 + 0.07 * (0.5 + 0.5 * Math.sin(t * 0.9 + i * 2.1)) + fxBoost * 0.25)*graphDecor; });
     centerGlow.material.opacity = 0.045 + fxBoost * 0.08 + 0.015 * Math.sin(t * 1.3);
     // 待機只保留極慢環流；真正的流動由工作事件驅動（見下方脈衝系統）
@@ -285,15 +299,13 @@ function makeRing(canvas) {
     const workerState=window.__lineWorkersState,workers=workerState&&Date.now()<workerState.valid_until?workerState.workers:[];
     const coreState=corePhase(data,[],decisionGraph.mainFresh());
     dock?.setPhase(coreState);coreAura.update(dt,t,coreState,fxBoost);decisionGraph.tick(dt);
-    if(_n-lastCoreReadback>200){lastCoreReadback=_n;window.__coreVisualReadback={...coreAura.readback(),coreTime,reducedMotion:reducedCore,motionAllowed:allowCoreMotion,mainParticles:cloudA.activeCount,accentParticles:cloudB.activeCount,totalParticles:cloudA.activeCount+cloudB.activeCount+coreAura.readback().particleDrawCount,particleCap:4096,qualityTier,fps:window.__fps,centerObstruction:false};}
+    if(_n-lastCoreReadback>200){lastCoreReadback=_n;window.__coreVisualReadback={...coreAura.readback(),coreTime,reducedMotion:reducedCore,motionAllowed:allowCoreMotion,mainParticles:cloudA.activeCount,accentParticles:cloudB.activeCount,totalParticles:cloudA.activeCount+cloudB.activeCount+coreAura.readback().particleDrawCount,particleCap:4096,helixCount:helices.filter(l=>l.visible&&helixRoot.visible).length,helixCap:16,visualMode:decisionGraph.mode(),orbitControls:true,qualityTier,fps:window.__fps,centerObstruction:false};}
     if (allowCoreMotion&&window.__camMode === "cruise") {
       cruiseT += dt;
       const phase = cruiseCam(dt);
       if (phase !== lastPhase) { lastPhase = phase; if (window.__onCamPhase) window.__onCamPhase(phase); }
-    } else if (allowCoreMotion&&window.__camMode === "fixed") {
-      parX += (parTX - parX) * 0.04; parY += (parTY - parY) * 0.04;
-      camera.position.lerp(new THREE.Vector3(parX * 0.9, 2.6 - parY * 0.6, 7.4), 0.05); camera.lookAt(0, 0, 0);
     }
+    controls.update();
     composer.render();
     renderLineWorkers();
     // 晶片固定在四角（不再跟隨 3D 投影移動，避免跑版/遮擋）；錨點光點仍在環上流動

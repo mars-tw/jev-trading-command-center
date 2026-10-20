@@ -4,11 +4,25 @@ A paper-trading research application with TypeSafe Jev decisions, an animated 3D
 
 這是 **JEV 整合程式的開源版**：保留環狀 3D 首頁、沿線移動的多視角寵物、模型／任務標籤與決策流程。所有交易由程式內的 PaperBroker 模擬，沒有交易所私有下單功能。
 
-![v0.1 舊版離線 DEMO 錄影：所有資料與模型回覆皆為合成](docs/media/preview.gif)
+## 新版實錄：桌面與手機
 
-[觀看 70 秒展示影片與下載](https://github.com/mars-tw/jev-trading-command-center/releases/tag/v0.1.0) · [程式展示 MP4](https://github.com/mars-tw/jev-trading-command-center/releases/download/v0.1.0/jev-showcase.mp4)
+兩支皆錄自 **v0.3 新版介面**，附原創配樂。畫面中的標的、帳戶、決策及模型工作都是合成 DEMO；沒有拍攝私人登入、API 金鑰或真實交易資料。
 
-> 上述 v0.1 媒體是較早的 DEMO 錄影，不包含目前的密碼登入、遠端工作階段或多週期研究介面，不能當成這些新功能的展示或驗收證明。
+### 桌面版 · 44.6 秒
+
+https://github.com/user-attachments/assets/5d10386f-13b8-4de7-9b45-ede341cc5d9c
+
+[下載桌面 MP4](https://github.com/mars-tw/jev-trading-command-center/releases/download/v0.3.0/jev-desktop-v0.3.mp4) · [查看桌面預覽圖](docs/media/desktop-v0.3.jpg)
+
+### 手機版 · 39.2 秒
+
+https://github.com/user-attachments/assets/d82f5742-44ed-4aba-9e67-5a782c4582b2
+
+[下載手機 MP4](https://github.com/mars-tw/jev-trading-command-center/releases/download/v0.3.0/jev-mobile-v0.3-final.mp4) · [查看手機預覽圖](docs/media/mobile-v0.3.jpg)
+
+手機影片是 390×844 響應式瀏覽器實錄，包含完整模型夥伴面板及週期指標卡。影片展示介面操作，不代表模型實際推論、策略績效或實機手機驗收。
+
+[下載 v0.3.0 原始碼與影片](https://github.com/mars-tw/jev-trading-command-center/releases/tag/v0.3.0) · [錄影與素材來源](docs/media/PROVENANCE-v0.3.json)
 
 ## 先開啟離線展示
 
@@ -29,6 +43,8 @@ python -B run_app.py --demo --check
 **DEMO 畫面上的行情、帳戶、損益、JEV 回覆與代理工作全部是合成資料。** `DEMO PASS`、`DEMO WAIT`、`DEMO 風控拒絕` 和 `DEMO 自動輪播` 只切換示範情境，不呼叫模型、不啟動原生 CLI，也不送出真實委託。錄影使用的就是這個模式。
 
 ## 介面
+
+新版預設為立體星環，可切換組織圖，並以拖曳、滾輪或雙指調整視角。M1 與策略實驗室均為唯讀檢視：缺少或過期的外部狀態會標示不可用；本版不附帶研究生產器、私人 runtime 或績效承諾。
 
 - 原有 3D 核心、行情清單、決策回執、風控、模擬持倉及事件流。
 - 每隻寵物有模型／實例名稱與目前工作；工作、待命、冷卻、離線分開呈現。
@@ -134,6 +150,6 @@ Node.js 僅用於前端驗證，不是離線展示的執行依賴。真實 API �
 
 ## 授權與資料
 
-應用程式及原創程序化寵物美術採 [MIT License](LICENSE)。Three.js 等第三方元件保留各自授權，見 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。展示配樂 **Neon Circuit** 為原創程序化合成作品，來源、音樂授權與成品隨版本發布。
+應用程式及原創寵物素材採 [MIT License](LICENSE)。Three.js 等第三方元件保留各自授權，見 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。展示配樂 **Neon Circuit** 為原創程序化合成作品，來源、音樂授權與成品隨版本發布。
 
 本專案沒有附帶私人帳戶資料、交易紀錄、供應商認證、模型權重或原生 CLI 執行檔。新的多週期面板只使用瀏覽器原生 API，沒有加入第三方執行依賴或素材。Jev 仍透過 [TypeSafe 官方 API](https://docs.typesafe.ai/api) 使用；這不是 TypeSafe 官方產品，也不以示範結果主張投資績效。安全預設及回報方式見 [SECURITY.md](SECURITY.md)。

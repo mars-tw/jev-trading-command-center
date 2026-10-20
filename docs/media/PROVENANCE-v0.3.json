@@ -1,0 +1,57 @@
+{
+  "version": "v0.3.0",
+  "recording": "Actual CUA Chrome browser-tab screenshots with measured capture timestamps, edited at explicit shot boundaries",
+  "data_mode": "SYNTHETIC_DEMO_ONLY",
+  "private_login_or_account_footage": false,
+  "desktop_source_viewport": [
+    1920,
+    1080
+  ],
+  "mobile_source_viewport": [
+    390,
+    844
+  ],
+  "mobile_physical_device_recording": false,
+  "source_lf_sha256": {
+    "web/stage.html": "aca976716e78a762bccafd194d362d6db1f7247fe96823917d02a4bb8c16fe82",
+    "web/three-viz.js": "387d10368e2c4062620b7accabc361ffeba3bfb42a562a322d1cef97d0138688",
+    "web/core-effects.js": "f9b1d6d3da7f37f9b3f7c3084649036991b6e2b2ef170ede378bb349afde092c",
+    "web/decision-graph.js": "60680109ceffc71dcc8c64c1a27dfaa65d0c15baeee7ca01f1e0cc926733cb26",
+    "web/orbit-controls.js": "f777474f12bca19c9d50d59aaceaed5856ca838d348e9d3cef81d36a711d43a1",
+    "web/m1-research.js": "374c649ece74ac04b4cb44d3ff58a2e4c7918fd6e3461101ceb14bb231ce3853",
+    "web/timeframe-research.js": "7630c6b8a2417a724205ea2f3fd539e8733d1ed58edf86b037a5e90e50f7f58a",
+    "web/line-workers.js": "6e2ec8550f821639ff6da7db31be97a976c4abacd730563ec46b5e8460b668d7"
+  },
+  "video_assets": [
+    {
+      "filename": "jev-desktop-v0.3.mp4",
+      "bytes": 9251569,
+      "sha256": "547e378d815b81ed41b7cfd36dc2a5f6e555efde323bb7c53c7cde59944bcee2",
+      "homepage_url": "https://github.com/user-attachments/assets/5d10386f-13b8-4de7-9b45-ede341cc5d9c",
+      "synthetic": true,
+      "output_fps": 24
+    },
+    {
+      "filename": "jev-mobile-v0.3-final.mp4",
+      "bytes": 6851894,
+      "sha256": "6955db2ea3c20ceccef7ebc1240b55d301bc5dd7120ed594f827bd6d2e6082f5",
+      "homepage_url": "https://github.com/user-attachments/assets/d82f5742-44ed-4aba-9e67-5a782c4582b2",
+      "synthetic": true,
+      "output_fps": 24
+    }
+  ],
+  "output": "H264/AAC limited yuv420p faststart, 24fps with duplicated captured frames; no optical-flow interpolation or generated UI",
+  "music": {
+    "name": "Neon Circuit",
+    "license": "MIT",
+    "original_pcm_sha256": "2fdcd9eebadcafeb8ba18a73a999b2e6fe066d43e52a1f3465b2e1b6420fa264",
+    "source": "extras/music/music_source.py",
+    "license_file": "extras/music/LICENSE.txt"
+  },
+  "technical_validation": {
+    "full_decode": true,
+    "browser_playback_1x_both_ended": true,
+    "human_approval": "NOT_RUN"
+  },
+  "supersedes": "Homepage v0.1 demo media; older releases remain available"
+}
