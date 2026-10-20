@@ -38,3 +38,8 @@ credentials*.json
 .sl/
 *.mp4
 *.wav
+
+# Independent adaptive paper runtime
+/output/strategy-lab-runtime/
+/web/strategy-lab/status.json
+/web/strategy-lab/status.json.tmp

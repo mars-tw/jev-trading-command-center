@@ -1,0 +1,32 @@
+/* Cinematic orbit surface and compact, accessible edge telemetry. */
+.coreStageHeading{display:flex;align-items:center;justify-content:space-between;gap:12px;min-width:0;padding:2px 3px 8px;color:#93adc1;font-size:10px;letter-spacing:2.4px}
+.coreStageHeading strong{font-size:11px;font-weight:500;color:#d9edf8;letter-spacing:3px}
+#coreLabSlot{display:flex;align-items:center;gap:8px;font-size:10px;letter-spacing:.3px;flex:none}
+#strategyLabButton{padding:4px 8px;font:10px Consolas,"Microsoft JhengHei",monospace;color:#a7c5d6;background:#07131d;border:1px solid #2c4356;border-radius:4px}
+#strategyLabButton:disabled{opacity:.65;cursor:default}
+#coreLabState{color:#7796a9}
+.torusWrap{--core-accent:#75dfff;border-radius:12px;border-color:#294052;background:radial-gradient(ellipse at 50% 53%,#101f3555 0,transparent 48%),linear-gradient(150deg,#070e19,#02050d 65%,#071020);box-shadow:inset 0 0 80px #0009,0 12px 36px #0004;isolation:isolate}
+.torusWrap:before{content:'';position:absolute;inset:0;z-index:2;pointer-events:none;background:linear-gradient(180deg,#0208116b,transparent 24%,transparent 78%,#02081191),radial-gradient(ellipse at 50% 52%,transparent 42%,#01050b55 100%);border-radius:inherit}
+.torusWrap:after{content:'';position:absolute;inset:7px;z-index:2;pointer-events:none;border:1px solid #a3d5ee08;border-radius:7px}
+.torusWrap #corePulse,.torusWrap #jcRing{display:none!important}
+.torusWrap #jevCore{position:absolute;z-index:5;left:14px;right:14px;top:12px;bottom:auto;transform:none;display:grid;grid-template-columns:auto minmax(0,1fr) 22px auto;grid-template-rows:38px auto;align-items:center;gap:0 12px;min-width:0;max-width:none;padding:0 13px;text-align:left;pointer-events:auto;border:1px solid #658ba944;border-radius:7px;background:linear-gradient(95deg,#08121feb,#0a1928dc 60%,#08121feb);box-shadow:0 5px 20px #0005,inset 0 1px #d1edff08;backdrop-filter:blur(10px);color:#dbeaf7}
+.torusWrap #jevCore:before{content:'';position:absolute;inset:0 auto 0 -1px;width:2px;border-radius:7px;background:var(--core-accent);box-shadow:0 0 12px color-mix(in srgb,var(--core-accent) 50%,transparent);opacity:.72;pointer-events:none}
+.torusWrap #jevCore .t{grid-column:1;grid-row:1;font-size:10px;letter-spacing:2.4px;font-weight:500;color:#8ab5cc;white-space:nowrap}
+.torusWrap #jcStatus{grid-column:2;grid-row:1;font-size:15px;font-weight:500;letter-spacing:.7px;margin:0;line-height:1.3;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#edf7ff;text-shadow:none}
+.torusWrap #jcMeta{grid-column:1/-1;grid-row:2;display:none;font-size:11px;color:#b1c7d8;line-height:1.8;padding:10px 0 12px;max-height:148px;overflow:auto;border-top:1px solid #58778d3d;overflow-wrap:anywhere}
+.torusWrap #jevCore[data-expanded=true] #jcMeta{display:block}
+.torusWrap #jevCore[data-expanded=true] #jcStatus{white-space:normal}
+.torusWrap #coreDetailsToggle{grid-column:4;grid-row:1;padding:4px 7px;border:1px solid #6b92ae44;border-radius:4px;color:#b7d8e9;background:#10253677;font:10px Consolas,"Microsoft JhengHei",monospace;letter-spacing:.2px;white-space:nowrap;cursor:pointer}
+.torusWrap #coreDetailsToggle:after{content:'⌄';display:inline-block;margin-left:7px;color:#8cc6df;font-size:13px}
+.torusWrap #coreDetailsToggle[aria-expanded=true]:after{transform:rotate(180deg)}
+.torusWrap #coreDetailsToggle:hover{border-color:#8ac6e1;background:#17354d}
+.torusWrap #coreDetailsToggle:focus-visible{outline:2px solid #b4e9fa;outline-offset:3px}
+.torusWrap #lwVerdict{grid-column:3;grid-row:1;display:block!important;font-size:19px!important;line-height:1!important;margin:0!important;padding:0;text-align:center;vertical-align:initial!important;opacity:.9}
+.torusWrap .chip{z-index:3;font-size:10px;padding:4px 7px;border-radius:4px;border-color:#5c829f55;background:#07121ed9;color:#abc8da;font-weight:400;max-width:40%;backdrop-filter:blur(4px)}
+.torusWrap #chipC{top:64px!important;left:15px!important}.torusWrap #chipR{top:64px!important;right:15px!important}.torusWrap #chipG{bottom:12px!important;right:15px!important;max-width:32%}
+.torusWrap #nowDoing{z-index:3;left:15px;bottom:12px;max-width:57%;border-color:#47677f55;border-radius:5px;background:#06111cdd;padding:6px 9px}
+.torusWrap #nowDoing .a{font-size:12px;line-height:1.5;font-weight:400;letter-spacing:.3px}.torusWrap #nowDoing .d{font-size:10px;line-height:1.5;color:#8eafc5}.torusWrap #nowDoing .n{font-size:10px}
+.coreFrameMark{position:absolute;width:20px;height:20px;z-index:3;pointer-events:none;border-color:#74b4d36b;border-style:solid;filter:drop-shadow(0 0 5px #6bc9ef33)}
+.coreFrameMark.nw{top:5px;left:5px;border-width:1px 0 0 1px}.coreFrameMark.ne{top:5px;right:5px;border-width:1px 1px 0 0}.coreFrameMark.sw{bottom:5px;left:5px;border-width:0 0 1px 1px}.coreFrameMark.se{bottom:5px;right:5px;border-width:0 1px 1px 0}
+@media(max-width:700px){.coreStageHeading{gap:5px;padding:2px 1px 6px;letter-spacing:1px}.coreStageHeading strong{font-size:9px;letter-spacing:1.5px}#coreLabSlot{gap:4px;font-size:8px}#strategyLabButton{font-size:9px;padding:3px 5px}.torusWrap #jevCore{left:9px;right:9px;top:9px;grid-template-columns:auto minmax(0,1fr) 17px auto;grid-template-rows:35px auto;gap:0 6px;padding:0 8px}.torusWrap #jevCore .t{font-size:8px;letter-spacing:1px}.torusWrap #jcStatus{font-size:12px;letter-spacing:0}.torusWrap #coreDetailsToggle{font-size:9px;padding:3px 4px}.torusWrap #coreDetailsToggle:after{margin-left:4px}.torusWrap #lwVerdict{font-size:15px!important}.torusWrap #jcMeta{font-size:10px;max-height:125px}.torusWrap #chipC,.torusWrap #chipR{top:55px!important;max-width:46%;font-size:8px;left:10px!important;padding:3px 5px}.torusWrap #chipR{left:auto!important;right:10px!important}.torusWrap #chipG{right:10px!important;bottom:10px!important;font-size:8px;max-width:31%}.torusWrap #nowDoing{left:10px;bottom:10px;padding:4px 6px;max-width:61%}.torusWrap #nowDoing .a{font-size:10px}.torusWrap #nowDoing .d,.torusWrap #nowDoing .n{font-size:8px}.torusWrap{border-radius:8px}.coreFrameMark{width:14px;height:14px}}
+@media(prefers-reduced-motion:reduce){.torusWrap *,.torusWrap:before,.torusWrap:after{animation:none!important;transition:none!important}}

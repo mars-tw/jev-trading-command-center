@@ -1,3 +1,5 @@
+import { createDecisionGraph } from "./decision-graph.js";
+import { createCinematicCore, coreVisualBudget, corePhase, initCoreDock } from "./core-effects.js";
 // Three.js 沉浸視覺：電漿決策球 + 藍紫粒子環面軌道核心。資料由 classic script 寫入 window.LIVE。
 import * as THREE from "three";
 import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
@@ -108,9 +110,15 @@ function textSprite(text, color) {
 
 // 藍紫粒子環面軌道核心：立體中空環面 + 絲流軌跡 + 訊號錨點 + 事件特效 + 鏡頭巡航
 function makeRing(canvas) {
+  const reducedMedia=window.matchMedia?.("(prefers-reduced-motion: reduce)");
+  let reducedCore=!!reducedMedia?.matches;
+  reducedMedia?.addEventListener?.("change",event=>{reducedCore=!!event.matches;});
+  const budget=coreVisualBudget(canvas.clientWidth||900,reducedCore&&!window.LineWorkers?.motionAllowed?.(),navigator.hardwareConcurrency||8);
+  const dock=initCoreDock(document,window);
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-  renderer.setPixelRatio(Math.min(devicePixelRatio, 1.25));
+  renderer.setPixelRatio(Math.min(devicePixelRatio, budget.pixelRatio));
   const scene = new THREE.Scene();
+  let ringComposer=null;
   const camera = new THREE.PerspectiveCamera(48, 2, 0.1, 100);
   camera.position.set(0, 2.6, 7.4); camera.lookAt(0, 0, 0);
   const world = new THREE.Group(); world.rotation.x = 0.38; world.scale.setScalar(1.12); scene.add(world);
@@ -121,8 +129,8 @@ function makeRing(canvas) {
   function makeCloud(count, size) {
     const geo = new THREE.BufferGeometry();
     const pos = new Float32Array(count * 3), col = new Float32Array(count * 3), seed = [];
-    const cBlue = new THREE.Color(0x2456ff), cPurp = new THREE.Color(0x8b5cff),
-      cCyan = new THREE.Color(0x37e0ff), cWhite = new THREE.Color(0xd8fbff), tmp = new THREE.Color();
+    const cBlue = new THREE.Color(0x1657ad), cPurp = new THREE.Color(0x6965bb),
+      cCyan = new THREE.Color(0x75deef), cWhite = new THREE.Color(0xe8f6ff), tmp = new THREE.Color();
     for (let i = 0; i < count; i++) {
       const u = Math.random() * Math.PI * 2, v = Math.random() * Math.PI * 2;
       const rr = TUBE * (0.72 + Math.random() * 0.38);
@@ -136,115 +144,66 @@ function makeRing(canvas) {
     }
     geo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
     geo.setAttribute("color", new THREE.BufferAttribute(col, 3));
-    const mat = new THREE.PointsMaterial({ size, map: spriteTex, vertexColors: true, transparent: true, opacity: 0.95,
+    const mat = new THREE.PointsMaterial({ size, map: spriteTex, vertexColors: true, transparent: true, opacity: 0.20,
       blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: true });
     const pts = new THREE.Points(geo, mat); world.add(pts);
-    return { geo, seed, count, mat };
+    return { geo, seed, count, activeCount:count, mat };
   }
   // 柔光粒子貼圖（徑向漸層），避免方形點
   const spriteTex = (() => { const c = document.createElement("canvas"); c.width = c.height = 64; const x = c.getContext("2d");
     const g = x.createRadialGradient(32, 32, 0, 32, 32, 32);
     g.addColorStop(0, "rgba(255,255,255,1)"); g.addColorStop(0.35, "rgba(255,255,255,.6)"); g.addColorStop(1, "rgba(255,255,255,0)");
     x.fillStyle = g; x.fillRect(0, 0, 64, 64); return new THREE.CanvasTexture(c); })();
-  const cloudA = makeCloud(5200, 0.05), cloudB = makeCloud(300, 0.09);
-  // 交錯絲流軌跡（繞環螺旋線）
-  const flowLines = [];
-  for (let k = 0; k < 20; k++) {
-    const turns = 3 + (k % 5), phase = (k / 20) * Math.PI * 2, pts = [];
-    for (let s = 0; s <= 200; s++) {
-      const u = (s / 200) * Math.PI * 2;
-      pts.push(torusPos(u, u * turns + phase, TUBE * 1.03));
-    }
-    const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts),
-      new THREE.LineBasicMaterial({ color: k % 3 ? 0x37e0ff : 0x8b5cff, transparent: true, opacity: 0.30, blending: THREE.AdditiveBlending, depthWrite: false }));
-    world.add(line); flowLines.push({ line, phase });
-  }
-  // Additive worker pets travel on the EXACT existing helical flow-line curves.
-  const workerSprites = new Map(), workerTextures = new Map();
-  const workerScene = new THREE.Scene(), workerRoot = new THREE.Group();
-  workerRoot.matrixAutoUpdate = false; workerScene.add(workerRoot);
-  function petTexture(alias,view,frame,working) {
-    const key = [alias,view,frame,working].join('|'); let texture = workerTextures.get(key);
-    if (!texture) { texture = new THREE.CanvasTexture(window.LineWorkers.makeTextureCanvas(alias,view,frame,working)); texture.colorSpace = THREE.SRGBColorSpace; workerTextures.set(key,texture); }
-    return texture;
-  }
-  function updateLineWorkers(dt) {
-    const api = window.LineWorkers, state = window.__lineWorkersState;
-    if (!api) return;
-    const items = state && Date.now() < state.valid_until ? state.workers : [], keep = new Set();
-    items.slice(0, 12).forEach((w, i) => {
-      keep.add(w.id); let sp = workerSprites.get(w.id);
-      if (!sp) {
-        sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: petTexture(w.alias,'front',0,false), transparent: true, depthWrite: false, depthTest: false, sizeAttenuation: false, toneMapped: false }));
-        sp.scale.set(0.085, 0.085, 1); sp.renderOrder = 100; workerRoot.add(sp); workerSprites.set(w.id, sp);
-      }
-      const flowIndex = Number.isInteger(sp.userData.flowIndex) ? sp.userData.flowIndex : i % flowLines.length;
-      const f = flowLines[flowIndex], turns = 3 + flowIndex % 5;
-      const u = api.advancePhase(sp.userData.u ?? i * 0.57, dt, w.working, Math.PI * 2);
-      sp.position.copy(torusPos(u, u * turns + f.phase, TUBE * 1.03));
-      sp.material.opacity = w.working ? 1 : 0.68;
-      sp.userData = { ...sp.userData, workerId: w.id, source: w.source, alias: w.alias, name:w.name, action:w.action, label: w.label, working: w.working, flowIndex, u, v: u * turns + f.phase };
+  const cloudA = makeCloud(budget.mainParticles, 0.043), cloudB = makeCloud(budget.accentParticles, 0.076);
+  // Whole original atlas pets travel on stable declared graph channels.
+  const workerSprites=new Map(),workerTextures=new Map(),petPhaseMemory=new Map(),workerScene=new THREE.Scene(),workerRoot=new THREE.Group();workerScene.add(workerRoot);
+  const graphCamera=new THREE.OrthographicCamera(0,900,500,0,.1,10);graphCamera.position.z=5;
+  const decisionGraph=createDecisionGraph(THREE,canvas.parentElement,workerScene,{readState:()=>({live:window.LIVE,workerState:window.__lineWorkersState,lab:window.__strategyLabState,demoPage:window.__JEV_DEMO__===true}),onInvalidate:()=>{if(ringComposer&&!document.hidden){updateLineWorkers(0);renderFrozen();}}});
+  function petTexture(alias,view,frame,working){const key=[alias,view,frame,working].join('|');let texture=workerTextures.get(key);if(!texture){texture=new THREE.CanvasTexture(window.LineWorkers.makeTextureCanvas(alias,view,frame,working));texture.colorSpace=THREE.SRGBColorSpace;workerTextures.set(key,texture);}const revision=Number(window.LineWorkers.artRevision?.()||0);if(texture.userData.artRevision!==revision){texture.needsUpdate=true;texture.userData.artRevision=revision;}return texture;}
+  window.LineWorkers?.onArtChange?.(()=>{for(const texture of workerTextures.values())texture.needsUpdate=true;if(ringComposer&&!document.hidden)renderFrozen();});
+  const petTarget=new THREE.Vector3(),petAhead=new THREE.Vector3();
+  function updateLineWorkers(dt,reproject=false){
+    const api=window.LineWorkers,state=window.__lineWorkersState;if(!api)return;const items=state&&Date.now()<state.valid_until?state.workers:[],keep=new Set(),moving=dt>0&&api.motionAllowed(),w=canvas.clientWidth||900,h=canvas.clientHeight||500;
+    items.slice(0,12).forEach((worker,i)=>{keep.add(worker.id);let sp=workerSprites.get(worker.id),created=false,restored=false;
+      if(!sp){sp=new THREE.Sprite(new THREE.SpriteMaterial({map:petTexture(worker.alias,'front',0,false),transparent:true,depthWrite:false,depthTest:false,sizeAttenuation:true,toneMapped:false}));sp.renderOrder=100;workerRoot.add(sp);workerSprites.set(worker.id,sp);const held=petPhaseMemory.get(worker.id);restored=!!held&&Date.now()-held.at<600000;sp.userData=restored?{u:held.u,view:held.view,frame:held.frame,routeId:held.routeId,appearanceKey:'held',artRevision:-1}:{u:(i*.173)%1};if(restored)sp.position.copy(held.position);created=true;}
+      const d=sp.userData,nextRoute=decisionGraph.routeForWorker(worker),nextU=api.advancePhase(d.u,dt,worker.working);
+      if(!d.routeId)d.routeId=nextRoute;
+      else if(d.routeId!==nextRoute&&moving){d.transition={from:sp.position.clone(),age:0};d.routeId=nextRoute;}
+      d.u=nextU;decisionGraph.sample(d.routeId,d.u,petTarget);
+      if(d.transition&&moving){d.transition.age+=Math.min(.1,dt);const a=Math.min(1,d.transition.age/.55),k=a*a*(3-2*a);sp.position.copy(d.transition.from).lerp(petTarget,k);if(a===1)d.transition=null;}
+      else if(moving||created&&!restored||reproject)sp.position.copy(petTarget);
+      const size=Math.max(32,Math.min(46,w*.06));sp.scale.set(size,size,1);sp.material.opacity=worker.working?1:.64;
+      Object.assign(d,{workerId:worker.id,source:worker.source,alias:worker.alias,name:worker.name,action:worker.action,label:worker.label,working:worker.working,job:worker.job,lane:worker.lane,pid:worker.pid,native_process:worker.native_process,demo_working:worker.demo_working,routePending:nextRoute!==d.routeId,renderer:'declared-graph'});
     });
-    for (const [id, sp] of workerSprites) if (!keep.has(id)) { workerRoot.remove(sp); sp.material.dispose(); workerSprites.delete(id); }
+    for(const [id,sp]of workerSprites)if(!keep.has(id)){const d=sp.userData;petPhaseMemory.set(id,{u:d.u,view:d.view,frame:d.frame,routeId:d.routeId,position:sp.position.clone(),at:Date.now()});while(petPhaseMemory.size>64)petPhaseMemory.delete(petPhaseMemory.keys().next().value);workerRoot.remove(sp);sp.material.dispose();workerSprites.delete(id);}
   }
-  function renderLineWorkers() {
-    const api = window.LineWorkers; if (!api) return;
-    workerRoot.matrix.copy(world.matrixWorld); workerRoot.updateMatrixWorld(true);
-    const points = [], now = performance.now(), bucket = Math.floor(now/140);
-    for (const sp of workerSprites.values()) {
-      const d=sp.userData,point=sp.getWorldPosition(new THREE.Vector3()).project(camera),f=flowLines[d.flowIndex],u=d.u+0.025;
-      const ahead=torusPos(u,u*(3+d.flowIndex%5)+f.phase,TUBE*1.03).applyMatrix4(world.matrixWorld).project(camera);
-      const view=api.viewFor((ahead.x-point.x)*canvas.clientWidth,-(ahead.y-point.y)*canvas.clientHeight),busy=d.source==='CLI'&&d.working;
-      const moving=api.motionAllowed();
-      if (!d.appearanceKey || (moving && d.artBucket!==bucket) || d.artWorking!==busy || d.artAlias!==d.alias) {
-        d.view=moving||!d.appearanceKey?view:d.view;d.frame=moving||!d.appearanceKey?api.frameFor(now):d.frame;d.artBucket=bucket;d.artWorking=busy;d.artAlias=d.alias;d.appearanceKey=[d.alias,d.view,d.frame,busy].join('|');sp.material.map=petTexture(d.alias,d.view,d.frame,busy);
-      }
-      d.screenX=(point.x+1)*canvas.clientWidth/2;d.screenY=(1-point.y)*canvas.clientHeight/2;
-      points.push({id:d.workerId,x:d.screenX,y:d.screenY});
+  function renderLineWorkers(){
+    const api=window.LineWorkers;if(!api)return;const points=[],now=performance.now(),bucket=Math.floor(now/140),width=canvas.clientWidth||900,height=canvas.clientHeight||500;
+    for(const sp of workerSprites.values()){
+      const d=sp.userData;decisionGraph.sample(d.routeId,d.u+.012,petAhead);const view=api.viewFor(petAhead.x-sp.position.x,-(petAhead.y-sp.position.y)),busy=d.working&&(d.source==='CLI'&&d.native_process===true||d.source==='DEMO'&&d.demo_working===true),moving=api.motionAllowed(),revision=Number(api.artRevision?.()||0);
+      if(!d.appearanceKey||(moving&&d.artBucket!==bucket)||d.artWorking!==busy||d.artAlias!==d.alias||d.artRevision!==revision){d.view=moving||!d.appearanceKey?view:d.view;d.frame=moving||!d.appearanceKey?api.frameFor(now):d.frame;d.artBucket=bucket;d.artWorking=busy;d.artAlias=d.alias;d.artRevision=revision;d.appearanceKey=[d.alias,d.view,d.frame,busy].join('|');sp.material.map=petTexture(d.alias,d.view,d.frame,busy);}
+      d.screenX=sp.position.x;d.screenY=height-sp.position.y;points.push({id:d.workerId,x:d.screenX,y:d.screenY});
     }
-    const autoClear = renderer.autoClear;
-    renderer.autoClear = false; renderer.clearDepth();
-    renderer.render(workerScene, camera); renderer.autoClear = autoClear;
-    api.placeLabels(points);
-    window.__lineWorkerReadback=[...workerSprites.values()].map(sp=>({...sp.userData,position:sp.position.toArray()}));
+    const autoClear=renderer.autoClear;renderer.autoClear=false;renderer.clearDepth();renderer.render(workerScene,graphCamera);renderer.autoClear=autoClear;api.placeLabels(points);
+    window.__lineWorkerReadback=[...workerSprites.values()].map(sp=>({...sp.userData,transition:sp.userData.transition?{age:sp.userData.transition.age}:null,position:sp.position.toArray(),textureVersion:sp.material.map?.version,textureReady:sp.material.map?.image?.dataset?.ready,textureSource:sp.material.map?.image?.dataset?.source}));window.__decisionGraphReadback=decisionGraph.readback();
   }
+  function renderFrozen(){if(!ringComposer)return;const g=decisionGraph.readback(),data=window.LIVE;const cs=corePhase(data,[],g.mainFresh);dock?.setPhase(cs);coreAura.update(0,coreTime,cs,0);decisionGraph.tick(0);window.__coreVisualReadback={...(window.__coreVisualReadback||{}),...coreAura.readback(),coreTime,mainFresh:g.mainFresh};ringComposer.render();renderLineWorkers();}
 
+  const graphDecor=decisionGraph.enabled?.3:1;
   // 絲線環（沿管面緯線）+ 中心輝光，強化中空立體感
   const filaments = [];
   for (let k = 0; k < 3; k++) {
     const pts = [], vb = 0.7 + k * 1.85;
     for (let i = 0; i <= 240; i++) { const u = (i / 240) * Math.PI * 2; pts.push(torusPos(u, vb + Math.sin(u * 3 + k * 2.1) * 0.16, TUBE * 1.02)); }
     const ln = new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(pts),
-      new THREE.LineBasicMaterial({ color: k === 1 ? 0x8b5cff : 0x37e0ff, transparent: true, opacity: 0.17, blending: THREE.AdditiveBlending, depthWrite: false }));
+      new THREE.LineBasicMaterial({ color: k === 1 ? 0x8b5cff : 0x37e0ff, transparent: true, opacity: 0.17*graphDecor, blending: THREE.AdditiveBlending, depthWrite: false }));
     world.add(ln); filaments.push({ ln, dir: k % 2 ? -1 : 1 });
   }
   const centerGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: spriteTex, color: 0x6a5cff, transparent: true, opacity: 0.30, blending: THREE.AdditiveBlending, depthWrite: false }));
   centerGlow.scale.set(4.6, 4.6, 1); world.add(centerGlow);
-  // 訊號錨點（策略/風控/執行等狀態標籤的 3D 附著點）
-  const anchors = [];
-  const anchorDefs = ["chipChoice", "chipGate", "chipRisk"];
-  for (let i = 0; i < 6; i++) {
-    const m = new THREE.Mesh(new THREE.SphereGeometry(0.058, 14, 14),
-      new THREE.MeshBasicMaterial({ color: i % 2 ? 0xd8fbff : 0x37e0ff }));
-    m.userData = { u: (i / 6) * Math.PI * 2 + 0.5, v: 0.9 + (i % 3) * 0.7, chip: anchorDefs[i % 3], idx: i };
-    world.add(m); anchors.push(m);
-    const lg = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3()]);
-    const ln = new THREE.Line(lg, new THREE.LineBasicMaterial({ color: 0x37e0ff, transparent: true, opacity: 0.55 }));
-    world.add(ln); m.userData.line = ln;
-  }
-  // 角色節點（內圈標籤附著於環面內緣，供點選）
-  const dyn = new THREE.Group(); world.add(dyn);
-  const pulseGroup = new THREE.Group(); world.add(pulseGroup);
-  const ray = new THREE.Raycaster(), ptr = new THREE.Vector2();
-  let roleMeshes = [];
-  canvas.addEventListener("pointerdown", e => {
-    const r = canvas.getBoundingClientRect();
-    ptr.x = ((e.clientX - r.left) / r.width) * 2 - 1;
-    ptr.y = -((e.clientY - r.top) / r.height) * 2 + 1;
-    ray.setFromCamera(ptr, camera);
-    const hit = ray.intersectObjects(roleMeshes, false)[0];
-    if (hit && window.__selectRole) window.__selectRole(hit.object.userData.roleId);
-  });
+  const coreAura=createCinematicCore(THREE,world,{mainRadius:R,tubeRadius:TUBE,motes:budget.motes,spriteTex,graphMode:decisionGraph.enabled});
+  let qualityTier=budget.tier,slowFrames=0,coreTime=0,lastCoreReadback=0;
+  coreAura.setQuality(qualityTier);
   let drag = null;
   canvas.addEventListener("pointerdown", e => { drag = { x: e.clientX, y: e.clientY }; });
   let parX = 0, parY = 0, parTX = 0, parTY = 0;
@@ -254,11 +213,14 @@ function makeRing(canvas) {
   function resize() {
     const w = canvas.clientWidth || 900, h = canvas.clientHeight || 430;
     renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
+    graphCamera.right=w;graphCamera.top=h;graphCamera.updateProjectionMatrix();decisionGraph.resize(w,h);updateLineWorkers(0,true);ringComposer?.setSize(w,h);
+    if(ringComposer&&document.body.classList.contains("noanim"))renderFrozen();
   }
   resize(); window.addEventListener("resize", resize);
   const composer = new EffectComposer(renderer);
+  ringComposer=composer;
   composer.addPass(new RenderPass(scene, camera));
-  composer.addPass(new UnrealBloomPass(new THREE.Vector2(900, 430), 0.65, 0.5, 0.22));
+  composer.addPass(new UnrealBloomPass(new THREE.Vector2(900, 430), 0.62, 0.32, 0.48));
   // 鏡頭巡航：全景 -> 推近 -> 孔洞近景 -> 斜側 -> 拉回（平滑加減速 + 停留）
   const KEYS = [
     { p: [0, 2.6, 7.4], dwell: 3.0 }, { p: [0, 1.5, 4.8], dwell: 2.0 },
@@ -284,59 +246,20 @@ function makeRing(canvas) {
   }
   window.__camMode = window.__camMode || "fixed";
   let sig = "", clock = new THREE.Clock(), lastPhase = -1;
-  // 共作電路：角色不是裝飾，依工作流程順序連成電路，脈衝只在真實事件發生時傳遞
-  const WORKFLOW = ["feed", "strategy", "sizer", "risk", "exec", "position", "record", "chief"];
-  const rolePos = {}, arcCurves = {}, pulses = [], flashUntil = {};
-  let prevRoleStatus = {}, prevPoll = -1, prevScan = -1, prevOrderSig = "", surgeUntil = 0, prevReviewSig = "", prevDecisionSig = "";
-  function spawnPulse(fromId, color) {
-    const curve = arcCurves[fromId];
-    if (!curve) return;
-    const mesh = new THREE.Sprite(new THREE.SpriteMaterial({ map: spriteTex, color: color || 0xd8fbff, transparent: true, opacity: 0.95, blending: THREE.AdditiveBlending, depthWrite: false }));
-    mesh.scale.set(0.42, 0.42, 1);
-    pulseGroup.add(mesh);
-    pulses.push({ mesh, curve, t: 0 });
-    const now = performance.now();
-    flashUntil[fromId] = now + 900;
-    const idx = WORKFLOW.indexOf(fromId);
-    if (idx >= 0) flashUntil[WORKFLOW[(idx + 1) % WORKFLOW.length]] = now + 1300;
-  }
-  function rebuild(data) {
-    while (dyn.children.length) dyn.remove(dyn.children[0]);
-    roleMeshes = [];
-    (data.roles || []).forEach((r, i) => {
-      const a = (i / 8) * Math.PI * 2;
-      const pos = new THREE.Vector3(Math.cos(a) * 1.15, -0.9, Math.sin(a) * 1.15);
-      rolePos[r.id] = pos;
-      const m = new THREE.Mesh(new THREE.SphereGeometry(0.17, 16, 16),
-        new THREE.MeshBasicMaterial({ color: new THREE.Color(r.color || "#37e0ff") }));
-      m.position.copy(pos); m.userData.roleId = r.id; dyn.add(m); roleMeshes.push(m);
-      // 中心不再放小字貼圖（放大也讀不到）；「誰決策/誰在跑」由中央 HTML 大字與組織圖承擔
-    });
-    // 依工作流程把角色連成共作電路（弧線往中心收，像電路走線）
-    for (let i = 0; i < WORKFLOW.length; i++) {
-      const a = rolePos[WORKFLOW[i]], b = rolePos[WORKFLOW[(i + 1) % WORKFLOW.length]];
-      if (!a || !b) continue;
-      const mid = a.clone().add(b).multiplyScalar(0.32).setY(-0.55);
-      const curve = new THREE.QuadraticBezierCurve3(a, mid, b);
-      arcCurves[WORKFLOW[i]] = curve;
-      // 用細管代替 1px 線（WebGL 線寬恆為 1），通電線路才看得清楚
-      dyn.add(new THREE.Mesh(new THREE.TubeGeometry(curve, 24, 0.016, 6, false),
-        new THREE.MeshBasicMaterial({ color: 0x37e0ff, transparent: true, opacity: 0.55, blending: THREE.AdditiveBlending, depthWrite: false })));
-    }
-  }
+  let surgeUntil=0;
   const chipEls = {};
   let _fpsFrames = 0, _fpsT0 = performance.now();
   window.__fps = 0;
   renderer.setAnimationLoop(() => {
-    if (document.body.classList.contains("noanim")) return;
+    if (document.body.classList.contains("noanim")||document.hidden) return;
     _fpsFrames++;
     const _n = performance.now();
-    if (_n - _fpsT0 >= 1000) { window.__fps = Math.round(_fpsFrames * 1000 / (_n - _fpsT0)); _fpsFrames = 0; _fpsT0 = _n; }
-    const dt = Math.min(clock.getDelta(), 0.05), t = clock.elapsedTime;
-    updateLineWorkers(dt);
+    if (_n - _fpsT0 >= 1000) { window.__fps = Math.round(_fpsFrames * 1000 / (_n - _fpsT0)); _fpsFrames = 0; _fpsT0 = _n;slowFrames=window.__fps<28?slowFrames+1:0;if(slowFrames>=2&&qualityTier>0){qualityTier--;slowFrames=0;const factor=qualityTier===0?.45:.72;for(const cloud of [cloudA,cloudB]){cloud.activeCount=Math.max(24,Math.floor(cloud.count*factor));cloud.geo.setDrawRange(0,cloud.activeCount);}coreAura.setQuality(qualityTier);} }
+    const rawDt=Math.min(clock.getDelta(),0.05),allowCoreMotion=window.LineWorkers?.motionAllowed?.()??!reducedCore,dt=allowCoreMotion?rawDt:0;coreTime+=dt;const t=coreTime;
+    updateLineWorkers(rawDt);
     const fx = window.__coreFX || { kind: "", at: 0 };
     const fxAge = (performance.now() - (fx.at || 0)) / 1000;
-    const fxBoost = fx.at && fxAge < 2.5 ? (1 - fxAge / 2.5) : 0;
+    const fxBoost = allowCoreMotion&&fx.at&&fxAge<2.5?(1-fxAge/2.5):0;
     // 粒子沿管面流動；環色/流速由市場偏向與訊號活躍度驅動（偏多綠、偏空紅、中性藍紫）
     const bias = window.__marketBias || { score: 0, signals: 0 };
     const biasCol = new THREE.Color(bias.score > 0.06 ? 0x8fffbc : bias.score < -0.06 ? 0xff9db4 : 0xffffff);
@@ -344,7 +267,7 @@ function makeRing(canvas) {
     for (const cloud of [cloudA, cloudB]) {
       const pos = cloud.geo.attributes.position;
       cloud.mat.color.lerp(biasCol, 0.02);
-      for (let i = 0; i < cloud.count; i++) {
+      for (let i = 0; dt>0&&i < cloud.activeCount; i++) {
         const s = cloud.seed[i]; s.v += dt * s.sp * (0.55 + actBoost) * (1 + fxBoost * 2.2);
         const p = torusPos(s.u, s.v, s.rr);
         pos.setXYZ(i, p.x, p.y, p.z);
@@ -352,82 +275,22 @@ function makeRing(canvas) {
       pos.needsUpdate = true;
       if (fx.kind === "reject" && fxBoost > 0) cloud.mat.color.set(0xff9db4);
     }
-    flowLines.forEach((f, i) => { f.line.material.opacity = 0.20 + 0.16 * (0.5 + 0.5 * Math.sin(t * 1.4 + f.phase * 3)) + fxBoost * 0.3; });
-    filaments.forEach((f, i) => { f.ln.rotation.z += dt * 0.05 * f.dir; f.ln.material.opacity = 0.13 + 0.07 * (0.5 + 0.5 * Math.sin(t * 0.9 + i * 2.1)) + fxBoost * 0.25; });
-    centerGlow.material.opacity = 0.26 + fxBoost * 0.35 + 0.04 * Math.sin(t * 1.3);
+    filaments.forEach((f, i) => { f.ln.rotation.z += dt * 0.05 * f.dir; f.ln.material.opacity = (0.13 + 0.07 * (0.5 + 0.5 * Math.sin(t * 0.9 + i * 2.1)) + fxBoost * 0.25)*graphDecor; });
+    centerGlow.material.opacity = 0.045 + fxBoost * 0.08 + 0.015 * Math.sin(t * 1.3);
     // 待機只保留極慢環流；真正的流動由工作事件驅動（見下方脈衝系統）
     const surging = performance.now() < surgeUntil;
     world.rotation.y += dt * (surging ? 0.22 : 0.03) * (1 + fxBoost * 1.5);
     // 工作偵測：行情輪詢/掃描輪次/角色狀態/訂單狀態一變，就沿共作電路送脈衝
     const data = window.LIVE;
-    if (data) {
-      if (prevPoll >= 0 && data.feed && data.feed.poll_count !== prevPoll) spawnPulse("feed", 0x37e0ff);
-      if (data.feed) prevPoll = data.feed.poll_count;
-      if (prevScan >= 0 && data.scan_count !== prevScan) { surgeUntil = performance.now() + 1800; spawnPulse("strategy", 0xffb020); }
-      if (data.scan_count != null) prevScan = data.scan_count;
-      for (const r of (data.roles || [])) {
-        if (prevRoleStatus[r.id] && prevRoleStatus[r.id] !== "working" && r.status === "working") spawnPulse(r.id, new THREE.Color(r.color || "#37e0ff").getHex());
-        prevRoleStatus[r.id] = r.status;
-      }
-      const o0 = (data.orders || [])[0];
-      if (o0) {
-        const osig = o0.id + o0.status;
-        if (prevOrderSig && prevOrderSig !== osig) {
-          if (o0.status === "WAITING_FILL" || o0.status === "PARTIALLY_FILLED") spawnPulse("exec", 0xdbe4f5);
-          else if (o0.status === "FILLED") spawnPulse("position", 0x2dd4bf);
-          else if (o0.status === "CLOSED") spawnPulse("record", 0x9fb2d8);
-          else if (o0.status === "RISK_REJECTED") spawnPulse("risk", 0xff4d6d);
-        }
-        prevOrderSig = osig;
-      }
-      // 複審事件：新複審紀錄出現 -> 紫色脈衝沿策略/風控電路傳遞 + 短暫加速環流
-      const rv = (data.reviews || [])[0];
-      if (rv) {
-        const rsig = rv.symbol + rv.at;
-        if (prevReviewSig && prevReviewSig !== rsig) { spawnPulse("strategy", 0x8b5cff); spawnPulse("risk", 0x8b5cff); surgeUntil = performance.now() + 1500; }
-        prevReviewSig = rsig;
-      }
-      // JEV 決策事件：新決策回執出現 -> 策略->風控->執行脈衝 + 環流加速（狀態由中央大字呈現）
-      const dc = (data.decisions || [])[0];
-      if (dc) {
-        const dsig = (dc.decision_id || "") + dc.status;
-        if (prevDecisionSig && prevDecisionSig !== dsig) {
-          spawnPulse("strategy", 0xff2ea6); spawnPulse("risk", dc.status === "RISK_REJECTED" ? 0xff4d6d : 0x2dff8f);
-          if (dc.final_outcome === "ORDER_SUBMITTED") spawnPulse("exec", 0xdbe4f5);
-          surgeUntil = performance.now() + 1800;
-        }
-        prevDecisionSig = dsig;
-      }
-      // 脈衝沿電路前進，走完移除；角色被點亮時放大
-      for (let i = pulses.length - 1; i >= 0; i--) {
-        const p = pulses[i]; p.t += dt / 1.15;
-        if (p.t >= 1) { pulseGroup.remove(p.mesh); pulses.splice(i, 1); continue; }
-        p.mesh.position.copy(p.curve.getPoint(p.t));
-        p.mesh.material.opacity = 0.95 * (1 - p.t * 0.4);
-      }
-      const nowMs = performance.now();
-      for (const m of roleMeshes) {
-        const hot = (flashUntil[m.userData.roleId] || 0) > nowMs;
-        m.scale.setScalar(hot ? 1.55 : 1.0);
-      }
-    }
-    anchors.forEach((m, i) => {
-      const p = torusPos(m.userData.u + t * 0.05, m.userData.v, TUBE * 1.06);
-      m.position.copy(p);
-      const s = 1 + fxBoost * 1.6 * (i % 3 === 0 ? 1 : 0.3) + 0.18 * Math.sin(t * 2 + i);
-      m.scale.setScalar(Math.max(0.4, s));
-      const lp = m.userData.line.geometry.attributes.position;
-      lp.setXYZ(0, p.x, p.y, p.z); lp.setXYZ(1, p.x * 0.4, p.y + 0.7, p.z * 0.4); lp.needsUpdate = true;
-    });
-    if (data) {
-      const s2 = JSON.stringify((data.roles || []).map(r => r.id + r.status));
-      if (s2 !== sig) { sig = s2; rebuild({ roles: data.roles || [] }); }
-    }
-    if (window.__camMode === "cruise") {
+    const workerState=window.__lineWorkersState,workers=workerState&&Date.now()<workerState.valid_until?workerState.workers:[];
+    const coreState=corePhase(data,[],decisionGraph.mainFresh());
+    dock?.setPhase(coreState);coreAura.update(dt,t,coreState,fxBoost);decisionGraph.tick(dt);
+    if(_n-lastCoreReadback>200){lastCoreReadback=_n;window.__coreVisualReadback={...coreAura.readback(),coreTime,reducedMotion:reducedCore,motionAllowed:allowCoreMotion,mainParticles:cloudA.activeCount,accentParticles:cloudB.activeCount,totalParticles:cloudA.activeCount+cloudB.activeCount+coreAura.readback().particleDrawCount,particleCap:4096,qualityTier,fps:window.__fps,centerObstruction:false};}
+    if (allowCoreMotion&&window.__camMode === "cruise") {
       cruiseT += dt;
       const phase = cruiseCam(dt);
       if (phase !== lastPhase) { lastPhase = phase; if (window.__onCamPhase) window.__onCamPhase(phase); }
-    } else if (window.__camMode === "fixed") {
+    } else if (allowCoreMotion&&window.__camMode === "fixed") {
       parX += (parTX - parX) * 0.04; parY += (parTY - parY) * 0.04;
       camera.position.lerp(new THREE.Vector3(parX * 0.9, 2.6 - parY * 0.6, 7.4), 0.05); camera.lookAt(0, 0, 0);
     }

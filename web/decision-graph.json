@@ -1,0 +1,1567 @@
+{
+  "schema_version": 1,
+  "kind": "DECLARED_RUNTIME_ORGANIZATION_GRAPH",
+  "status": "UI_TOPOLOGY_V1",
+  "title": "JEV 決策組織圖",
+  "graphify_context": {
+    "skill": "graphify",
+    "atlas_structure": "Local atlas documentation is not distributed",
+    "atlas_corpus_files": 10,
+    "atlas_nodes": 541,
+    "atlas_edges": 1290,
+    "scanner_in_atlas_corpus": false,
+    "existing_ast_graph_modified": false,
+    "claim": "This is a source-verified declared UI workflow specification, not Graphify AST extraction."
+  },
+  "limits": {
+    "nodes": 16,
+    "edges": 24,
+    "packets": 60,
+    "workers": 12
+  },
+  "authority": {
+    "main_pipeline": "LIVE.reviews/multi_review -> JEV -> deterministic risk -> PaperBroker",
+    "guild_pipeline": "independent public-snapshot commentary; not consumed by main JEV",
+    "lab_pipeline": "independent adaptive PaperArena, engine_hook_enabled:false",
+    "native_cli_not_inferred_from_alias": true
+  },
+  "styles": {
+    "background": "calm reactor and sparse halo",
+    "outline": "#7897aa",
+    "active": "#7eddf2",
+    "idle": "#526a7b",
+    "cooldown": "#b29a6f",
+    "blocked": "#bd7c78",
+    "shape_policy": "faceted module/crystal outlines; no large solid RGB spheres",
+    "labels": "Chinese group headers; stable readable module labels; actual pet name/task text retained",
+    "no_new_dependencies": true
+  },
+  "coordinate_system": {
+    "type": "normalized_graph_plane",
+    "range": [
+      -1,
+      1
+    ],
+    "graph_follows_world_rotation": false,
+    "reactor_anchor": [
+      0,
+      0
+    ],
+    "label_positions": "layout positions are anchors, not text boxes; CSS measured bounds decide placement",
+    "render_order": [
+      "cinematic reactor background",
+      "organization curves and module glyphs",
+      "whole-cell pet sprites",
+      "HTML labels and existing 40px edge dock"
+    ]
+  },
+  "responsive": {
+    "landscape": {
+      "min_width": 1000,
+      "visible_functional_nodes": 12,
+      "layout": "horizontal main chain around central reactor; lower independent research branches"
+    },
+    "portrait": {
+      "min_width": 600,
+      "max_width": 999,
+      "visible_functional_nodes": 12,
+      "layout": "two-column main chain arch; separate lower research clusters"
+    },
+    "compact": {
+      "max_width": 599,
+      "layout": "group headers remain visible; main-analysis/signal and each research branch may collapse to summary glyphs with outside-core detail",
+      "preserve_all_status_in_detail": true,
+      "no_torus_min_height_increase": true,
+      "no_horizontal_overflow": true
+    }
+  },
+  "nodes": [
+    {
+      "id": "main_pipeline",
+      "label": "主決策鏈",
+      "parent": null,
+      "kind": "group",
+      "render": "group_header",
+      "layout": {
+        "landscape": {
+          "x": -0.6,
+          "y": 0.9
+        },
+        "portrait": {
+          "x": -0.55,
+          "y": 0.88
+        },
+        "compact": {
+          "x": -0.55,
+          "y": 0.88
+        }
+      },
+      "state_binding": {
+        "provider": "children",
+        "aggregate": "display_only_no_inferred_work"
+      },
+      "source_location": [
+        {
+          "path": "releases/jev-trading-command-center/scanner/engine.py",
+          "line": 659,
+          "symbol": "TradingEngine._decision_worker",
+          "evidence": "SOURCE_READBACK",
+          "ast_extracted": false
+        }
+      ],
+      "provenance": "DECLARED_WORKFLOW"
+    },
+    {
+      "id": "guild_pipeline",
+      "label": "CLI 獨立研究",
+      "parent": null,
+      "kind": "group",
+      "render": "group_header",
+      "layout": {
+        "landscape": {
+          "x": -0.62,
+          "y": -0.36
+        },
+        "portrait": {
+          "x": -0.58,
+          "y": -0.35
+        },
+        "compact": {
+          "x": -0.55,
+          "y": -0.53
+        }
+      },
+      "state_binding": {
+        "provider": "window.__lineWorkersState",
+        "freshness": "existing_LineWorkers_validation",
+        "main_engine_consumes_results": false
+      },
+      "source_location": [
+        {
+          "path": "releases/jev-trading-command-center/scanner/agent_guild.py",
+          "line": 68,
+          "symbol": "LANES",
+          "evidence": "SOURCE_READBACK",
+          "ast_extracted": false
+        }
+      ],
+      "provenance": "DECLARED_WORKFLOW"
+    },
+    {
+      "id": "lab_pipeline",
+      "label": "策略實驗室",
+      "parent": null,
+      "kind": "group",
+      "render": "group_header",
+      "layout": {
+        "landscape": {
+          "x": 0.48,
+          "y": -0.36
+        },
+        "portrait": {
+          "x": 0.45,
+          "y": -0.35
+        },
+        "compact": {
+          "x": 0.54,
+          "y": -0.53
+        }
+      },
+      "state_binding": {
+        "provider": "window.__strategyLabState",
+        "contract_state": "VALIDATE_FULL_TARGET_SCHEMA_OR_INACTIVE",
+        "engine_hook_enabled": false
+      },
+      "source_location": [
+        {
+          "path": "releases/jev-trading-command-center/web/core-effects.js",
+          "line": 203,
+          "symbol": "initCoreDock.updateResearch current_phase_only_limit",
+          "evidence": "SOURCE_READBACK",
+          "ast_extracted": false
+        }
+      ],
+      "provenance": "DECLARED_WORKFLOW"
+    },
+    {
+      "id": "feed",
+      "label": "公開行情",
+      "parent": null,
+      "kind": "source",
+      "render": "faceted_module",
+      "layout": {
+        "landscape": {
+          "x": -0.86,
+          "y": 0.38
+        },
+        "portrait": {
+          "x": -0.62,
+          "y": 0.7
+        },
+        "compact": {
+          "x": -0.58,
+          "y": 0.58
+        }
+      },
+      "state_binding": {
+        "provider": "window.LIVE",
+        "freshness": "main_status_accepted_within_5500ms",
+        "display_fields": [
+          "name",
+          "status",
+          "task",
+          "updated_at"
+        ],
+        "excluded_fields": [
+          "account",
+          "balances",
+          "cash",
+          "positions",
+          "role.summary"
+        ],
+        "paths": [
+          "LIVE.roles[id=feed]",
+          "LIVE.feed.poll_count"
+        ],
+        "ports": {
+          "main": "main feed module",
+          "guild": "read-only public snapshot",
+          "lab": "independent public acquisition reference, not a main-engine handoff"
+        }
+      },
+      "source_location": [
+        {
+          "path": "releases/jev-trading-command-center/scanner/engine.py",
+          "line": 484,
+          "symbol": "TradingEngine._roles",
+          "evidence": "SOURCE_READBACK",
+          "ast_extracted": false
+        },
+        {
+          "path": "releases/jev-trading-command-center/scanner/agent_guild.py",
+          "line": 253,
+          "symbol": "public snapshot URL validation",
+          "evidence": "SOURCE_READBACK",
+          "ast_extracted": false
+        }
+      ],
+      "provenance": "DECLARED_WORKFLOW"
+    },
+    {
+      "id": "signal",
+      "label": "訊號／倉位",
+      "parent": "main_pipeline",
+      "kind": "module",
+      "render": "faceted_module",
+      "layout": {
+        "landscape": {
+          "x": -0.62,
+          "y": 0.38
+        },
+        "portrait": {
+          "x": -0.62,
+          "y": 0.43
+        },
+        "compact": {
+          "x": -0.58,
+          "y": 0.28
+        }
+      },
+      "state_binding": {
+        "provider": "window.LIVE",
+        "freshness": "main_status_accepted_within_5500ms",
+        "display_fields": [
+          "name",
+          "status",
+          "task",
+          "updated_at"
+        ],
+        "excluded_fields": [
+          "account",
+          "balances",
+          "cash",
+          "positions",
+          "role.summary"
+        ],
+        "role_ids": [
+          "strategy",
+          "sizer"
+        ],
+        "paths": [
+          "LIVE.roles[id=strategy]",
+          "LIVE.roles[id=sizer]",
+          "LIVE.scan_count"
+        ],
+        "transfer_rule": "only a changed scan/review event; cached working role alone is not a new candidate handoff"
+      },
+      "source_location": [
+        {
+          "path": "releases/jev-trading-command-center/scanner/engine.py",
+          "line": 484,
+          "symbol": "TradingEngine._roles",
+          "evidence": "SOURCE_READBACK",
+          "ast_extracted": false
+        }
+      ],
+      "provenance": "DECLARED_WORKFLOW"
+    },
+    {
+      "id": "main_analysis",
+      "label": "主分析",
+      "parent": "main_pipeline",
+      "kind": "module",
+      "render": "faceted_module",
+      "layout": {
+        "landscape": {
+          "x": -0.34,
+          "y": 0.38
+        },
+        "portrait": {
+          "x": -0.4,
+          "y": 0.14
+        },
+        "compact": {
+          "x": -0.4,
+          "y": 0.02
+        }
+      },
+      "state_binding": {
+        "provider": "window.LIVE",
+        "freshness": "main_status_accepted_within_5500ms",
+        "display_fields": [
+          "name",
+          "status",
+          "task",
+          "updated_at"
+        ],
+        "excluded_fields": [
+          "account",
+          "balances",
+          "cash",
+          "positions",
+          "role.summary"
+        ],
+        "paths": [
+          "LIVE.models",
+          "LIVE.reviews[0].votes",
+          "LIVE.reviews[0].at",
+          "LIVE.jev_core.busy"
+        ],
+        "model_status_values": [
+          "READY",
+          "IDLE",
+          "DISABLED",
+          "UNAVAILABLE"
+        ],
+        "group_busy_caption": "決策鏈執行中",
+        "individual_busy_inference": false,
+        "guild_workers_are_not_model_votes": true
+      },
+      "source_location": [
+        {
+          "path": "releases/jev-trading-command-center/scanner/engine.py",
+          "line": 659,
+          "symbol": "TradingEngine._decision_worker",
+          "evidence": "SOURCE_READBACK",
+          "ast_extracted": false
+        },
+        {
+          "path": "releases/jev-trading-command-center/scanner/engine.py",
+          "line": 546,
+          "symbol": "TradingEngine._models_payload",
+          "evidence": "SOURCE_READBACK",
+          "ast_extracted": false
+        }
+      ],
+      "provenance": "DECLARED_WORKFLOW"
+    },
+    {
+      "id": "jev",
+      "label": "JEV",
+      "parent": "main_pipeline",
+      "kind": "physical_reactor",
+      "render": "faceted_module",
+      "layout": {
+        "landscape": {
+          "x": 0,
+          "y": 0
+        },
+        "portrait": {
+          "x": 0,
+          "y": 0
+        },
+        "compact": {
+          "x": 0,
+          "y": 0
+        }
+      },
+      "state_binding": {
+        "provider": "window.LIVE",
+        "freshness": "main_status_accepted_within_5500ms",
+        "display_fields": [
+          "name",
+          "status",
+          "task",
+          "updated_at"
+        ],
+        "excluded_fields": [
+          "account",
+          "balances",
+          "cash",
+          "positions",
+          "role.summary"
+        ],
+        "paths": [
+          "LIVE.jev_core.busy",
+          "LIVE.jev_core.last_decision.status",
+          "LIVE.jev_core.last_decision.decision_id",
+          "LIVE.jev_core.last_decision.final_outcome"
+        ],
+        "submitted_requires": "status=JEV_ACTION_SELECTED AND final_outcome=ORDER_SUBMITTED",
+        "other_votes_never_authorize_order": true
+      },
+      "source_location": [
+        {
+          "path": "releases/jev-trading-command-center/scanner/engine.py",
+          "line": 659,
+          "symbol": "TradingEngine._decision_worker",
+          "evidence": "SOURCE_READBACK",
+          "ast_extracted": false
+        },
+        {
+          "path": "releases/jev-trading-command-center/scanner/engine.py",
+          "line": 929,
+          "symbol": "TradingEngine._execute_decision",
+          "evidence": "SOURCE_READBACK",
+          "ast_extracted": false
+        }
+      ],
+      "provenance": "DECLARED_WORKFLOW"
+    },
+    {
+      "id": "risk",
+      "label": "風控",
+      "parent": "main_pipeline",
+      "kind": "module",
+      "render": "faceted_module",
+      "layout": {
+        "landscape": {
+          "x": 0.34,
+          "y": 0.38
+        },
+        "portrait": {
+          "x": 0.4,
+          "y": 0.14
+        },
+        "compact": {
+          "x": 0.4,
+          "y": 0.02
+        }
+      },
+      "state_binding": {
+        "provider": "window.LIVE",
+        "freshness": "main_status_accepted_within_5500ms",
+        "display_fields": [
+          "name",
+          "status",
+          "task",
+          "updated_at"
+        ],
+        "excluded_fields": [
+          "account",
+          "balances",
+          "cash",
+          "positions",
+          "role.summary"
+        ],
+        "role_ids": [
+          "risk"
+        ],
+        "paths": [
+          "LIVE.roles[id=risk]",
+          "LIVE.jev_core.last_decision.status"
+        ],
+        "transfer_rule": "no outbound execution packet for rejected/invalidated/wait/missing decision"
+      },
+      "source_location": [
+        {
+          "path": "releases/jev-trading-command-center/scanner/engine.py",
+          "line": 929,
+          "symbol": "TradingEngine._execute_decision",
+          "evidence": "SOURCE_READBACK",
+          "ast_extracted": false
+        }
+      ],
+      "provenance": "DECLARED_WORKFLOW"
+    },
+    {
+      "id": "paper_execution",
+      "label": "模擬執行",
+      "parent": "main_pipeline",
+      "kind": "module",
+      "render": "faceted_module",
+      "layout": {
+        "landscape": {
+          "x": 0.62,
+          "y": 0.38
+        },
+        "portrait": {
+          "x": 0.62,
+          "y": 0.43
+        },
+        "compact": {
+          "x": 0.58,
+          "y": 0.28
+        }
+      },
+      "state_binding": {
+        "provider": "window.LIVE",
+        "freshness": "main_status_accepted_within_5500ms",
+        "display_fields": [
+          "name",
+          "status",
+          "task",
+          "updated_at"
+        ],
+        "excluded_fields": [
+          "account",
+          "balances",
+          "cash",
+          "positions",
+          "role.summary"
+        ],
+        "role_ids": [
+          "exec"
+        ],
+        "paths": [
+          "LIVE.roles[id=exec]",
+          "LIVE.orders[].id",
+          "LIVE.orders[].status"
+        ],
+        "mode_label": "主引擎 PaperBroker",
+        "never_label_live_order": true
+      },
+      "source_location": [
+        {
+          "path": "releases/jev-trading-command-center/scanner/engine.py",
+          "line": 929,
+          "symbol": "TradingEngine._execute_decision",
+          "evidence": "SOURCE_READBACK",
+          "ast_extracted": false
+        }
+      ],
+      "provenance": "DECLARED_WORKFLOW"
+    },
+    {
+      "id": "position_record",
+      "label": "持倉／紀錄",
+      "parent": "main_pipeline",
+      "kind": "module",
+      "render": "faceted_module",
+      "layout": {
+        "landscape": {
+          "x": 0.86,
+          "y": 0.38
+        },
+        "portrait": {
+          "x": 0.62,
+          "y": 0.7
+        },
+        "compact": {
+          "x": 0.58,
+          "y": 0.58
+        }
+      },
+      "state_binding": {
+        "provider": "window.LIVE",
+        "freshness": "main_status_accepted_within_5500ms",
+        "display_fields": [
+          "role.name",
+          "role.task",
+          "role.status",
+          "role.updated_at"
+        ],
+        "excluded_fields": [
+          "account",
+          "balances",
+          "cash",
+          "positions",
+          "role.summary"
+        ],
+        "role_ids": [
+          "position",
+          "record"
+        ],
+        "paths": [
+          "LIVE.roles[id=position]",
+          "LIVE.roles[id=record]",
+          "LIVE.orders[].status"
+        ],
+        "no_extra_account_fetch": true
+      },
+      "source_location": [
+        {
+          "path": "releases/jev-trading-command-center/scanner/engine.py",
+          "line": 484,
+          "symbol": "TradingEngine._roles",
+          "evidence": "SOURCE_READBACK",
+          "ast_extracted": false
+        }
+      ],
+      "provenance": "DECLARED_WORKFLOW"
+    },
+    {
+      "id": "guild_research",
+      "label": "CLI 研究工作",
+      "parent": "guild_pipeline",
+      "kind": "research_cluster",
+      "render": "faceted_module",
+      "layout": {
+        "landscape": {
+          "x": -0.56,
+          "y": -0.62
+        },
+        "portrait": {
+          "x": -0.55,
+          "y": -0.62
+        },
+        "compact": {
+          "x": -0.55,
+          "y": -0.7
+        }
+      },
+      "state_binding": {
+        "provider": "window.__lineWorkersState.workers",
+        "freshness": "existing_validWorker_or_demoWorker_and_valid_until",
+        "paths": [
+          "workers[].id",
+          "workers[].alias",
+          "workers[].lane",
+          "workers[].job",
+          "workers[].working",
+          "workers[].source",
+          "workers[].heartbeat_at_ms",
+          "workers[].cooldown_until_ms",
+          "source_mode",
+          "native_active",
+          "demo_active"
+        ],
+        "completion_not_currently_exported": "do not show job completed until a sanitized authoritative event is available",
+        "main_engine_consumes_results": false
+      },
+      "source_location": [
+        {
+          "path": "releases/jev-trading-command-center/scanner/agent_guild.py",
+          "line": 68,
+          "symbol": "LANES",
+          "evidence": "SOURCE_READBACK",
+          "ast_extracted": false
+        },
+        {
+          "path": "releases/jev-trading-command-center/web/line-workers.js",
+          "line": 54,
+          "symbol": "validWorker",
+          "evidence": "SOURCE_READBACK",
+          "ast_extracted": false
+        },
+        {
+          "path": "releases/jev-trading-command-center/web/line-workers.js",
+          "line": 61,
+          "symbol": "publish",
+          "evidence": "SOURCE_READBACK",
+          "ast_extracted": false
+        }
+      ],
+      "provenance": "DECLARED_WORKFLOW"
+    },
+    {
+      "id": "lab_proposal",
+      "label": "提案",
+      "parent": "lab_pipeline",
+      "kind": "research_module",
+      "render": "faceted_module",
+      "layout": {
+        "landscape": {
+          "x": 0.14,
+          "y": -0.62
+        },
+        "portrait": {
+          "x": 0.18,
+          "y": -0.58
+        },
+        "compact": {
+          "x": 0.27,
+          "y": -0.7
+        }
+      },
+      "state_binding": {
+        "provider": "window.__strategyLabState",
+        "contract_state": "VALIDATE_FULL_TARGET_SCHEMA_OR_INACTIVE",
+        "unavailable_default": true,
+        "never_infer_from_core_phase_only": true
+      },
+      "source_location": [
+        {
+          "path": "releases/jev-trading-command-center/scanner/strategy_lab_spec.py",
+          "line": 59,
+          "symbol": "validate_proposal",
+          "evidence": "SOURCE_READBACK",
+          "ast_extracted": false
+        },
+        {
+          "path": "releases/jev-trading-command-center/web/core-effects.js",
+          "line": 203,
+          "symbol": "updateResearch phase-only hook; full lab contract pending",
+          "evidence": "SOURCE_READBACK",
+          "ast_extracted": false
+        }
+      ],
+      "provenance": "DECLARED_WORKFLOW"
+    },
+    {
+      "id": "lab_backtest",
+      "label": "回測",
+      "parent": "lab_pipeline",
+      "kind": "research_module",
+      "render": "faceted_module",
+      "layout": {
+        "landscape": {
+          "x": 0.42,
+          "y": -0.62
+        },
+        "portrait": {
+          "x": 0.65,
+          "y": -0.58
+        },
+        "compact": {
+          "x": 0.73,
+          "y": -0.7
+        }
+      },
+      "state_binding": {
+        "provider": "window.__strategyLabState",
+        "contract_state": "VALIDATE_FULL_TARGET_SCHEMA_OR_INACTIVE",
+        "unavailable_default": true
+      },
+      "source_location": [],
+      "provenance": "DECLARED_WORKFLOW"
+    },
+    {
+      "id": "lab_paper",
+      "label": "獨立紙上試驗",
+      "parent": "lab_pipeline",
+      "kind": "research_module",
+      "render": "faceted_module",
+      "layout": {
+        "landscape": {
+          "x": 0.68,
+          "y": -0.62
+        },
+        "portrait": {
+          "x": 0.65,
+          "y": -0.84
+        },
+        "compact": {
+          "x": 0.73,
+          "y": -0.88
+        }
+      },
+      "state_binding": {
+        "provider": "window.__strategyLabState",
+        "contract_state": "VALIDATE_FULL_TARGET_SCHEMA_OR_INACTIVE",
+        "unavailable_default": true,
+        "engine_hook_enabled": false,
+        "display_qualification_only_if_explicit": true
+      },
+      "source_location": [],
+      "provenance": "DECLARED_WORKFLOW"
+    },
+    {
+      "id": "lab_memory",
+      "label": "試驗記憶",
+      "parent": "lab_pipeline",
+      "kind": "research_module",
+      "render": "faceted_module",
+      "layout": {
+        "landscape": {
+          "x": 0.42,
+          "y": -0.86
+        },
+        "portrait": {
+          "x": 0.18,
+          "y": -0.84
+        },
+        "compact": {
+          "x": 0.27,
+          "y": -0.88
+        }
+      },
+      "state_binding": {
+        "provider": "window.__strategyLabState",
+        "contract_state": "VALIDATE_FULL_TARGET_SCHEMA_OR_INACTIVE",
+        "unavailable_default": true,
+        "never_promotes_to_main_strategy": true
+      },
+      "source_location": [],
+      "provenance": "DECLARED_WORKFLOW"
+    }
+  ],
+  "edges": [
+    {
+      "id": "main-feed-signal",
+      "source": "feed",
+      "target": "signal",
+      "lane": "main",
+      "label": "行情快照",
+      "relation": "data",
+      "provenance": "DECLARED_WORKFLOW",
+      "source_location": [
+        {
+          "path": "releases/jev-trading-command-center/scanner/engine.py",
+          "line": 659,
+          "symbol": "TradingEngine._decision_worker",
+          "evidence": "SOURCE_READBACK",
+          "ast_extracted": false
+        },
+        {
+          "path": "releases/jev-trading-command-center/scanner/engine.py",
+          "line": 929,
+          "symbol": "TradingEngine._execute_decision",
+          "evidence": "SOURCE_READBACK",
+          "ast_extracted": false
+        }
+      ],
+      "allow_active_transport": true,
+      "allow_idle_patrol": true,
+      "event_binding": [
+        "LIVE.feed.poll_count change",
+        "fresh main snapshot"
+      ]
+    },
+    {
+      "id": "main-signal-analysis",
+      "source": "signal",
+      "target": "main_analysis",
+      "lane": "main",
+      "label": "候選／分析",
+      "relation": "data",
+      "provenance": "DECLARED_WORKFLOW",
+      "source_location": [
+        {
+          "path": "releases/jev-trading-command-center/scanner/engine.py",
+          "line": 659,
+          "symbol": "TradingEngine._decision_worker",
+          "evidence": "SOURCE_READBACK",
+          "ast_extracted": false
+        },
+        {
+          "path": "releases/jev-trading-command-center/scanner/engine.py",
+          "line": 929,
+          "symbol": "TradingEngine._execute_decision",
+          "evidence": "SOURCE_READBACK",
+          "ast_extracted": false
+        }
+      ],
+      "allow_active_transport": true,
+      "allow_idle_patrol": true,
+      "event_binding": [
+        "LIVE.scan_count change",
+        "new LIVE.reviews[0].at"
+      ]
+    },
+    {
+      "id": "main-analysis-jev",
+      "source": "main_analysis",
+      "target": "jev",
+      "lane": "main",
+      "label": "分析證據",
+      "relation": "data",
+      "provenance": "DECLARED_WORKFLOW",
+      "source_location": [
+        {
+          "path": "releases/jev-trading-command-center/scanner/engine.py",
+          "line": 659,
+          "symbol": "TradingEngine._decision_worker",
+          "evidence": "SOURCE_READBACK",
+          "ast_extracted": false
+        },
+        {
+          "path": "releases/jev-trading-command-center/scanner/engine.py",
+          "line": 929,
+          "symbol": "TradingEngine._execute_decision",
+          "evidence": "SOURCE_READBACK",
+          "ast_extracted": false
+        }
+      ],
+      "allow_active_transport": true,
+      "allow_idle_patrol": true,
+      "event_binding": [
+        "new LIVE.reviews[0].at",
+        "no guild event substitution"
+      ]
+    },
+    {
+      "id": "main-jev-risk",
+      "source": "jev",
+      "target": "risk",
+      "lane": "main",
+      "label": "選擇後重驗",
+      "relation": "control",
+      "provenance": "DECLARED_WORKFLOW",
+      "source_location": [
+        {
+          "path": "releases/jev-trading-command-center/scanner/engine.py",
+          "line": 659,
+          "symbol": "TradingEngine._decision_worker",
+          "evidence": "SOURCE_READBACK",
+          "ast_extracted": false
+        },
+        {
+          "path": "releases/jev-trading-command-center/scanner/engine.py",
+          "line": 929,
+          "symbol": "TradingEngine._execute_decision",
+          "evidence": "SOURCE_READBACK",
+          "ast_extracted": false
+        }
+      ],
+      "allow_active_transport": true,
+      "allow_idle_patrol": true,
+      "event_binding": [
+        "new valid JEV decision_id",
+        "status JEV_ACTION_SELECTED only"
+      ]
+    },
+    {
+      "id": "main-risk-exec",
+      "source": "risk",
+      "target": "paper_execution",
+      "lane": "main",
+      "label": "模擬委託",
+      "relation": "control",
+      "provenance": "DECLARED_WORKFLOW",
+      "source_location": [
+        {
+          "path": "releases/jev-trading-command-center/scanner/engine.py",
+          "line": 659,
+          "symbol": "TradingEngine._decision_worker",
+          "evidence": "SOURCE_READBACK",
+          "ast_extracted": false
+        },
+        {
+          "path": "releases/jev-trading-command-center/scanner/engine.py",
+          "line": 929,
+          "symbol": "TradingEngine._execute_decision",
+          "evidence": "SOURCE_READBACK",
+          "ast_extracted": false
+        }
+      ],
+      "allow_active_transport": true,
+      "allow_idle_patrol": true,
+      "event_binding": [
+        "decision final_outcome ORDER_SUBMITTED",
+        "matching actual order id/status"
+      ]
+    },
+    {
+      "id": "main-exec-record",
+      "source": "paper_execution",
+      "target": "position_record",
+      "lane": "main",
+      "label": "回報／紀錄",
+      "relation": "data",
+      "provenance": "DECLARED_WORKFLOW",
+      "source_location": [
+        {
+          "path": "releases/jev-trading-command-center/scanner/engine.py",
+          "line": 659,
+          "symbol": "TradingEngine._decision_worker",
+          "evidence": "SOURCE_READBACK",
+          "ast_extracted": false
+        },
+        {
+          "path": "releases/jev-trading-command-center/scanner/engine.py",
+          "line": 929,
+          "symbol": "TradingEngine._execute_decision",
+          "evidence": "SOURCE_READBACK",
+          "ast_extracted": false
+        }
+      ],
+      "allow_active_transport": true,
+      "allow_idle_patrol": true,
+      "event_binding": [
+        "actual order id+status transition",
+        "role heartbeat is status-only, not a fabricated fill"
+      ]
+    },
+    {
+      "id": "guild-market_patrol",
+      "source": "feed",
+      "target": "guild_research",
+      "lane": "guild",
+      "label": "行情巡查",
+      "relation": "research",
+      "provenance": "DECLARED_WORKFLOW",
+      "source_location": [
+        {
+          "path": "releases/jev-trading-command-center/scanner/agent_guild.py",
+          "line": 68,
+          "symbol": "LANES",
+          "evidence": "SOURCE_READBACK",
+          "ast_extracted": false
+        }
+      ],
+      "allow_active_transport": true,
+      "allow_idle_patrol": true,
+      "event_binding": [
+        "fresh validated worker.working=true",
+        "matching worker.job and normalized lane",
+        "heartbeat bounded by existing LineWorkers gate"
+      ],
+      "lane_key": "market_patrol",
+      "legacy_lane_keys": [
+        "market"
+      ],
+      "parallel_channel_index": 0,
+      "main_engine_consumes_results": false,
+      "completion_rule": "no completion inferred from worker becoming idle"
+    },
+    {
+      "id": "guild-signal_review",
+      "source": "feed",
+      "target": "guild_research",
+      "lane": "guild",
+      "label": "訊號複核",
+      "relation": "research",
+      "provenance": "DECLARED_WORKFLOW",
+      "source_location": [
+        {
+          "path": "releases/jev-trading-command-center/scanner/agent_guild.py",
+          "line": 68,
+          "symbol": "LANES",
+          "evidence": "SOURCE_READBACK",
+          "ast_extracted": false
+        }
+      ],
+      "allow_active_transport": true,
+      "allow_idle_patrol": true,
+      "event_binding": [
+        "fresh validated worker.working=true",
+        "matching worker.job and normalized lane",
+        "heartbeat bounded by existing LineWorkers gate"
+      ],
+      "lane_key": "signal_review",
+      "legacy_lane_keys": [
+        "signal"
+      ],
+      "parallel_channel_index": 1,
+      "main_engine_consumes_results": false,
+      "completion_rule": "no completion inferred from worker becoming idle"
+    },
+    {
+      "id": "guild-risk_hunt",
+      "source": "feed",
+      "target": "guild_research",
+      "lane": "guild",
+      "label": "風險找碴",
+      "relation": "research",
+      "provenance": "DECLARED_WORKFLOW",
+      "source_location": [
+        {
+          "path": "releases/jev-trading-command-center/scanner/agent_guild.py",
+          "line": 68,
+          "symbol": "LANES",
+          "evidence": "SOURCE_READBACK",
+          "ast_extracted": false
+        }
+      ],
+      "allow_active_transport": true,
+      "allow_idle_patrol": true,
+      "event_binding": [
+        "fresh validated worker.working=true",
+        "matching worker.job and normalized lane",
+        "heartbeat bounded by existing LineWorkers gate"
+      ],
+      "lane_key": "risk_hunt",
+      "legacy_lane_keys": [
+        "risk"
+      ],
+      "parallel_channel_index": 2,
+      "main_engine_consumes_results": false,
+      "completion_rule": "no completion inferred from worker becoming idle"
+    },
+    {
+      "id": "guild-counter_case",
+      "source": "feed",
+      "target": "guild_research",
+      "lane": "guild",
+      "label": "反證挑戰",
+      "relation": "research",
+      "provenance": "DECLARED_WORKFLOW",
+      "source_location": [
+        {
+          "path": "releases/jev-trading-command-center/scanner/agent_guild.py",
+          "line": 68,
+          "symbol": "LANES",
+          "evidence": "SOURCE_READBACK",
+          "ast_extracted": false
+        }
+      ],
+      "allow_active_transport": true,
+      "allow_idle_patrol": true,
+      "event_binding": [
+        "fresh validated worker.working=true",
+        "matching worker.job and normalized lane",
+        "heartbeat bounded by existing LineWorkers gate"
+      ],
+      "lane_key": "counter_case",
+      "legacy_lane_keys": [
+        "counterevidence"
+      ],
+      "parallel_channel_index": 3,
+      "main_engine_consumes_results": false,
+      "completion_rule": "no completion inferred from worker becoming idle"
+    },
+    {
+      "id": "guild-cross_check",
+      "source": "feed",
+      "target": "guild_research",
+      "lane": "guild",
+      "label": "交叉對照",
+      "relation": "research",
+      "provenance": "DECLARED_WORKFLOW",
+      "source_location": [
+        {
+          "path": "releases/jev-trading-command-center/scanner/agent_guild.py",
+          "line": 68,
+          "symbol": "LANES",
+          "evidence": "SOURCE_READBACK",
+          "ast_extracted": false
+        }
+      ],
+      "allow_active_transport": true,
+      "allow_idle_patrol": true,
+      "event_binding": [
+        "fresh validated worker.working=true",
+        "matching worker.job and normalized lane",
+        "heartbeat bounded by existing LineWorkers gate"
+      ],
+      "lane_key": "cross_check",
+      "legacy_lane_keys": [
+        "comparison"
+      ],
+      "parallel_channel_index": 4,
+      "main_engine_consumes_results": false,
+      "completion_rule": "no completion inferred from worker becoming idle"
+    },
+    {
+      "id": "guild-research_notes",
+      "source": "feed",
+      "target": "guild_research",
+      "lane": "guild",
+      "label": "研究整理",
+      "relation": "research",
+      "provenance": "DECLARED_WORKFLOW",
+      "source_location": [
+        {
+          "path": "releases/jev-trading-command-center/scanner/agent_guild.py",
+          "line": 68,
+          "symbol": "LANES",
+          "evidence": "SOURCE_READBACK",
+          "ast_extracted": false
+        }
+      ],
+      "allow_active_transport": true,
+      "allow_idle_patrol": true,
+      "event_binding": [
+        "fresh validated worker.working=true",
+        "matching worker.job and normalized lane",
+        "heartbeat bounded by existing LineWorkers gate"
+      ],
+      "lane_key": "research_notes",
+      "legacy_lane_keys": [
+        "summary"
+      ],
+      "parallel_channel_index": 5,
+      "main_engine_consumes_results": false,
+      "completion_rule": "no completion inferred from worker becoming idle"
+    },
+    {
+      "id": "lab-public-source",
+      "source": "feed",
+      "target": "lab_proposal",
+      "lane": "lab",
+      "label": "公開來源（獨立擷取）",
+      "relation": "source_reference",
+      "provenance": "DECLARED_WORKFLOW",
+      "source_location": [],
+      "allow_active_transport": false,
+      "allow_idle_patrol": false,
+      "event_binding": [],
+      "independent_acquisition": true,
+      "no_main_feed_handoff_claim": true
+    },
+    {
+      "id": "lab-propose-backtest",
+      "source": "lab_proposal",
+      "target": "lab_backtest",
+      "lane": "lab",
+      "label": "候選驗證",
+      "relation": "research",
+      "provenance": "DECLARED_WORKFLOW",
+      "source_location": [],
+      "allow_active_transport": true,
+      "allow_idle_patrol": true,
+      "event_binding": [
+        "PENDING actual normalized lab contract"
+      ],
+      "contract_state": "VALIDATE_FULL_TARGET_SCHEMA_OR_INACTIVE"
+    },
+    {
+      "id": "lab-backtest-paper",
+      "source": "lab_backtest",
+      "target": "lab_paper",
+      "lane": "lab",
+      "label": "紙上評估",
+      "relation": "research",
+      "provenance": "DECLARED_WORKFLOW",
+      "source_location": [],
+      "allow_active_transport": true,
+      "allow_idle_patrol": true,
+      "event_binding": [
+        "PENDING actual normalized lab contract"
+      ],
+      "contract_state": "VALIDATE_FULL_TARGET_SCHEMA_OR_INACTIVE"
+    },
+    {
+      "id": "lab-paper-memory",
+      "source": "lab_paper",
+      "target": "lab_memory",
+      "lane": "lab",
+      "label": "試驗記錄",
+      "relation": "research",
+      "provenance": "DECLARED_WORKFLOW",
+      "source_location": [],
+      "allow_active_transport": true,
+      "allow_idle_patrol": true,
+      "event_binding": [
+        "PENDING actual normalized lab contract"
+      ],
+      "contract_state": "VALIDATE_FULL_TARGET_SCHEMA_OR_INACTIVE"
+    },
+    {
+      "id": "lab-memory-proposal",
+      "source": "lab_memory",
+      "target": "lab_proposal",
+      "lane": "lab",
+      "label": "研究迭代",
+      "relation": "feedback",
+      "provenance": "DECLARED_WORKFLOW",
+      "source_location": [],
+      "allow_active_transport": true,
+      "allow_idle_patrol": true,
+      "event_binding": [
+        "PENDING actual normalized lab contract"
+      ],
+      "explicit_feedback": true,
+      "contract_state": "VALIDATE_FULL_TARGET_SCHEMA_OR_INACTIVE"
+    },
+    {
+      "id": "lab-main-disconnected",
+      "source": "lab_memory",
+      "target": "signal",
+      "lane": "lab",
+      "label": "未接主策略",
+      "relation": "disconnected_reference",
+      "provenance": "DECLARED_WORKFLOW",
+      "source_location": [],
+      "allow_active_transport": false,
+      "allow_idle_patrol": false,
+      "event_binding": [],
+      "arrowheads": false,
+      "engine_hook_enabled": false,
+      "main_promotion_authorized": false,
+      "requires_future_explicit_implementation": true
+    }
+  ],
+  "role_mapping": {
+    "feed": "feed",
+    "strategy": "signal",
+    "sizer": "signal",
+    "risk": "risk",
+    "exec": "paper_execution",
+    "position": "position_record",
+    "record": "position_record",
+    "chief": "existing dock/chief detail; not a fictional transfer authority"
+  },
+  "guild_lane_aliases": [
+    {
+      "canonical": "market_patrol",
+      "legacy": [
+        "market"
+      ],
+      "label": "行情巡查",
+      "source_location": [
+        {
+          "path": "releases/jev-trading-command-center/scanner/agent_guild.py",
+          "line": 68,
+          "symbol": "LANES",
+          "evidence": "SOURCE_READBACK",
+          "ast_extracted": false
+        }
+      ],
+      "rule": "normalize only known IDs; unknown lane routes to labeled research standby, never assign a task by model alias"
+    },
+    {
+      "canonical": "signal_review",
+      "legacy": [
+        "signal"
+      ],
+      "label": "訊號複核",
+      "source_location": [
+        {
+          "path": "releases/jev-trading-command-center/scanner/agent_guild.py",
+          "line": 68,
+          "symbol": "LANES",
+          "evidence": "SOURCE_READBACK",
+          "ast_extracted": false
+        }
+      ],
+      "rule": "normalize only known IDs; unknown lane routes to labeled research standby, never assign a task by model alias"
+    },
+    {
+      "canonical": "risk_hunt",
+      "legacy": [
+        "risk"
+      ],
+      "label": "風險找碴",
+      "source_location": [
+        {
+          "path": "releases/jev-trading-command-center/scanner/agent_guild.py",
+          "line": 68,
+          "symbol": "LANES",
+          "evidence": "SOURCE_READBACK",
+          "ast_extracted": false
+        }
+      ],
+      "rule": "normalize only known IDs; unknown lane routes to labeled research standby, never assign a task by model alias"
+    },
+    {
+      "canonical": "counter_case",
+      "legacy": [
+        "counterevidence"
+      ],
+      "label": "反證挑戰",
+      "source_location": [
+        {
+          "path": "releases/jev-trading-command-center/scanner/agent_guild.py",
+          "line": 68,
+          "symbol": "LANES",
+          "evidence": "SOURCE_READBACK",
+          "ast_extracted": false
+        }
+      ],
+      "rule": "normalize only known IDs; unknown lane routes to labeled research standby, never assign a task by model alias"
+    },
+    {
+      "canonical": "cross_check",
+      "legacy": [
+        "comparison"
+      ],
+      "label": "交叉對照",
+      "source_location": [
+        {
+          "path": "releases/jev-trading-command-center/scanner/agent_guild.py",
+          "line": 68,
+          "symbol": "LANES",
+          "evidence": "SOURCE_READBACK",
+          "ast_extracted": false
+        }
+      ],
+      "rule": "normalize only known IDs; unknown lane routes to labeled research standby, never assign a task by model alias"
+    },
+    {
+      "canonical": "research_notes",
+      "legacy": [
+        "summary"
+      ],
+      "label": "研究整理",
+      "source_location": [
+        {
+          "path": "releases/jev-trading-command-center/scanner/agent_guild.py",
+          "line": 68,
+          "symbol": "LANES",
+          "evidence": "SOURCE_READBACK",
+          "ast_extracted": false
+        }
+      ],
+      "rule": "normalize only known IDs; unknown lane routes to labeled research standby, never assign a task by model alias"
+    }
+  ],
+  "worker_routing": {
+    "CLI": "only normalized guild research channel",
+    "DEMO": "only same simulated channel with visible DEMO label and native count zero",
+    "SYSTEM": "actual LIVE role edge via role_mapping; explicitly labeled system, not native CLI",
+    "WAIT": "muted research standby patrol; never assigned a made-up lane",
+    "identity": "keep stable worker id and existing alias#number",
+    "phase": "per-worker persistent normalized phase; never reset on work/idle/cooldown; route changes blend from held position without inventing completion",
+    "facing": "projected directed-curve tangent -> existing LineWorkers.viewFor()",
+    "art": "existing makeTextureCanvas(alias,view,frame,working); preserve whole PNG cells and real work flag"
+  },
+  "packet_semantics": {
+    "hard_cap": 60,
+    "budgets": {
+      "ambient": 18,
+      "native_guild": 12,
+      "main_events": 20,
+      "lab_events": 10
+    },
+    "ambient": {
+      "caption": "待命巡流",
+      "opacity_range": [
+        0.08,
+        0.16
+      ],
+      "counts_as_active": false,
+      "never_makes_nodes_working": true
+    },
+    "active": {
+      "requires": "fresh provider + actual event/validated active job; descriptive event bindings are implemented as explicit pure predicates, never eval",
+      "opacity_range": [
+        0.65,
+        0.9
+      ]
+    },
+    "completion": "requires authoritative new receipt/status; never infer from a moving animation reaching the curve end",
+    "future_lab_contract": "until writer supplies actual schema and fresh authoritative lab client state, lab active packets remain disabled",
+    "cold_start": "Baseline historical main receipt/order/review IDs on the first accepted snapshot; never replay old transfers. Fresh validated in-flight native jobs may show active transport immediately."
+  },
+  "label_reservations": {
+    "include": [
+      "actual edge dock bounds",
+      "actual module/group label bounds",
+      "actual projected physical reactor seed footprint",
+      "existing chips/nowDoing bounds"
+    ],
+    "exclude": [
+      "old large invisible center rectangle"
+    ],
+    "pet_names_and_tasks": "keep actual text and accessible full titles; shorten visual tags only when measured collisions require it",
+    "motion": "existing LineWorkers.motionAllowed controls all transport; global pause/hidden tab freezes positions/facings/frames; texture reload can repaint without advancing"
+  },
+  "source_index": [
+    {
+      "path": "releases/jev-trading-command-center/web/three-viz.js",
+      "line": 157,
+      "symbol": "20 old helical flowLines",
+      "evidence": "SOURCE_READBACK",
+      "ast_extracted": false
+    },
+    {
+      "path": "releases/jev-trading-command-center/web/three-viz.js",
+      "line": 185,
+      "symbol": "updateLineWorkers",
+      "evidence": "SOURCE_READBACK",
+      "ast_extracted": false
+    },
+    {
+      "path": "releases/jev-trading-command-center/web/three-viz.js",
+      "line": 204,
+      "symbol": "renderLineWorkers",
+      "evidence": "SOURCE_READBACK",
+      "ast_extracted": false
+    },
+    {
+      "path": "releases/jev-trading-command-center/web/three-viz.js",
+      "line": 241,
+      "symbol": "old sphere anchors",
+      "evidence": "SOURCE_READBACK",
+      "ast_extracted": false
+    },
+    {
+      "path": "releases/jev-trading-command-center/web/three-viz.js",
+      "line": 305,
+      "symbol": "WORKFLOW and pulse routing",
+      "evidence": "SOURCE_READBACK",
+      "ast_extracted": false
+    },
+    {
+      "path": "releases/jev-trading-command-center/web/three-viz.js",
+      "line": 321,
+      "symbol": "rebuild role spheres",
+      "evidence": "SOURCE_READBACK",
+      "ast_extracted": false
+    },
+    {
+      "path": "releases/jev-trading-command-center/web/line-workers.js",
+      "line": 35,
+      "symbol": "actual label bounds reservation",
+      "evidence": "SOURCE_READBACK",
+      "ast_extracted": false
+    },
+    {
+      "path": "releases/jev-trading-command-center/web/line-workers.js",
+      "line": 54,
+      "symbol": "native worker validation",
+      "evidence": "SOURCE_READBACK",
+      "ast_extracted": false
+    },
+    {
+      "path": "releases/jev-trading-command-center/web/line-workers.js",
+      "line": 61,
+      "symbol": "sanitized worker publish",
+      "evidence": "SOURCE_READBACK",
+      "ast_extracted": false
+    },
+    {
+      "path": "releases/jev-trading-command-center/web/core-effects.js",
+      "line": 118,
+      "symbol": "physical reactor seed",
+      "evidence": "SOURCE_READBACK",
+      "ast_extracted": false
+    },
+    {
+      "path": "releases/jev-trading-command-center/web/core-effects.js",
+      "line": 184,
+      "symbol": "40px edge dock controller",
+      "evidence": "SOURCE_READBACK",
+      "ast_extracted": false
+    }
+  ],
+  "validation": {
+    "schema_version": 1,
+    "status": "PASS",
+    "nodes": 15,
+    "edges": 18,
+    "packets_cap": 60,
+    "edge_endpoints_valid": true,
+    "parent_references_valid": true,
+    "finite_normalized_coordinates": true,
+    "main_and_nonfeedback_graph_acyclic": true,
+    "explicit_feedback_edges": [
+      "lab-memory-proposal"
+    ],
+    "guild_to_main_active_edges": 0,
+    "lab_to_main_active_edges": 0,
+    "lab_contract_unavailable_defaults": true,
+    "product_files_changed": 0
+  },
+  "lab_contract": {
+    "namespace": "window.__strategyLabState",
+    "schema_version": 1,
+    "mode": "ADAPTIVE_PAPER",
+    "heartbeat_ttl_ms": 180000,
+    "event": "jev:strategy-lab-state",
+    "native_proof": [
+      "native.enabled",
+      "native.status=running",
+      "native.pid>0",
+      "native.process_alive=true"
+    ],
+    "flags": {
+      "engine_hook_enabled": false,
+      "exchange_execution_enabled": false,
+      "main_engine_unchanged": true
+    },
+    "provenance": "Backend writer confirmed target contract; actual data still validated at consumption."
+  }
+}

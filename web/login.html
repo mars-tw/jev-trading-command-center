@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<!-- 登入前這一頁的 CSRF：由伺服器每次發頁時重新產生，搭配一次性 preauth cookie。
+     這裡沒有任何行內 script，所以 CSP 只需要 script-src 'self'。 -->
+<meta name="jev-login-csrf" content="__CSRF__">
+<title>JEV 指揮中心：登入</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/login.css">
+</head>
+<body>
+<main class="card">
+  <div class="login-mark" aria-hidden="true">
+    <span class="login-mark__core">J</span>
+    <i class="login-mark__orbit login-mark__orbit--one"></i>
+    <i class="login-mark__orbit login-mark__orbit--two"></i>
+  </div>
+  <h1>JEV 指揮中心</h1>
+  <p class="hint">登入工作指揮台，查看模型夥伴、任務與多週期研究</p>
+  <form id="loginForm" autocomplete="on" novalidate>
+    <label for="username">使用者名稱</label>
+    <input id="username" name="username" type="text" autocomplete="username"
+           spellcheck="false" autocapitalize="none" required>
+    <label for="password">密碼</label>
+    <input id="password" name="password" type="password" autocomplete="current-password"
+           required>
+    <button id="submitButton" type="submit">登入</button>
+  </form>
+  <div id="loginMessage" role="status" aria-live="polite"></div>
+  <p class="foot">閒置 30 分鐘會自動登出；單次工作階段最長 8 小時。登出只會結束這個裝置上的工作階段。</p>
+</main>
+<script src="/login.js"></script>
+</body>
+</html>

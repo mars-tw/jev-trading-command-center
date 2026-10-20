@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Independent adaptive PAPER public status",
+  "type": "object",
+  "required": ["schema_version", "mode", "phase", "heartbeat_at_ms", "pid", "instance_id", "tick_count", "engine_hook_enabled", "exchange_execution_enabled", "main_engine_unchanged", "research", "native", "paper", "data"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "mode": {"const": "ADAPTIVE_PAPER"},
+    "phase": {"enum": ["idle", "scanning", "backtesting", "evaluating", "archiving", "cooldown", "unavailable"]},
+    "heartbeat_at_ms": {"type": "integer", "minimum": 0},
+    "pid": {"type": "integer", "minimum": 1},
+    "instance_id": {"type": "string", "maxLength": 80},
+    "tick_count": {"type": "integer", "minimum": 0},
+    "engine_hook_enabled": {"const": false},
+    "exchange_execution_enabled": {"const": false},
+    "main_engine_unchanged": {"const": true},
+    "data": {"type": "object", "required": ["dataset_id", "cutoff_ms", "live_ok", "public_fetch_enabled"]},
+    "research": {"type": "object", "required": ["state", "trial_count", "qualified_count", "active_candidate_id", "recent_trials"]},
+    "paper": {"type": "object", "required": ["qualified", "unqualified_shadow"]},
+    "native": {
+      "type": "object", "required": ["enabled", "status", "pid", "process_alive"],
+      "properties": {"enabled": {"type": "boolean"}, "process_alive": {"type": "boolean"}},
+      "allOf": [{"if": {"properties": {"status": {"const": "running"}}}, "then": {
+        "required": ["alias", "pid", "started_at_ms"],
+        "properties": {"pid": {"type": "integer", "minimum": 1}, "process_alive": {"const": true},
+          "alias": {"enum": ["AGY", "GROK", "CODEX", "CLAUDE"]}}
+      }}]
+    }
+  }
+}

@@ -9,11 +9,13 @@ import os
 
 from .demo_engine import SCENARIOS, DemoEngine
 from .server import GuardedHandler, make_server
+from .timeframe_analysis import (CANONICAL_INTERVALS, TimeframeService,
+                                 antigravity_route, public_research_context)
 
 CONTROL_ACTIONS = ("pause_new", "resume")
 GUILD_ACTIONS = ("pause", "resume")
 
-_demo = {"engine": None}
+_demo = {"engine": None, "analysis_service": None, "analysis_symbol": None}
 
 BOOTSTRAP_JS = (
     'window.__JEV_DEMO__=true;'
@@ -32,6 +34,7 @@ class DemoHandler(GuardedHandler):
                   ("/api/guild/status", "get_guild"),
                   ("/api/health", "get_health"),
                   ("/api/guild/health", "get_health"),
+                  ("/api/analysis/timeframes", "get_analysis_timeframes"),
                   ("/api/bootstrap.js", "get_bootstrap"))
     post_routes = (("/api/demo", "post_demo"),
                    ("/api/control", "post_control"),
@@ -39,12 +42,17 @@ class DemoHandler(GuardedHandler):
                    ("/api/review", "post_decision"),
                    ("/api/decision", "post_decision"),
                    ("/api/scan", "post_scan"),
+                   ("/api/analysis/select", "post_analysis_select"),
                    ("/api/order/cancel", "post_order_cancel"),
                    ("/api/position/close", "post_position_close"))
 
     @property
     def engine(self):
         return _demo["engine"]
+
+    @property
+    def analysis_service(self):
+        return _demo["analysis_service"]
 
     # ---------- GET ----------
     def get_status(self):
@@ -58,6 +66,23 @@ class DemoHandler(GuardedHandler):
 
     def get_bootstrap(self):
         self._send(BOOTSTRAP_JS.encode("utf-8"), "text/javascript; charset=utf-8")
+
+    def get_analysis_timeframes(self):
+        symbol = _demo["analysis_symbol"]
+        if symbol is None:
+            snapshot = {
+                "symbol": None,
+                "status": "unknown",
+                "reason": "missing_source",
+                "fetched_at": None,
+                "server_time": None,
+                "stale": False,
+                "analysis_only": True,
+                "execution_authority": False,
+            }
+        else:
+            snapshot = self.analysis_service.snapshot(symbol)
+        return self.json(_analysis_response(snapshot))
 
     # ---------- POST（全部只改合成畫面，不呼叫引擎／模型／交易所） ----------
     def post_demo(self):
@@ -118,6 +143,19 @@ class DemoHandler(GuardedHandler):
             "scan", {"scanned_at": self.engine.status()["scanned_at"],
                      "note": "DEMO：合成掃描畫面本來就持續推進，這裡不觸發任何連線"}))
 
+    def post_analysis_select(self):
+        payload, err = self.read_payload(("symbol",))
+        if err:
+            return self.deny(*err)
+        symbol = payload.get("symbol")
+        if not isinstance(symbol, str):
+            return self.deny(400, "invalid_symbol")
+        result = self.analysis_service.select(symbol, owner=True, csrf_valid=True)
+        if result.get("reason") == "invalid_symbol":
+            return self.deny(400, "invalid_symbol")
+        _demo["analysis_symbol"] = symbol
+        return self.json(_analysis_response(result))
+
     def post_order_cancel(self):
         payload, err = self.read_payload(("id",))
         if err:
@@ -138,17 +176,59 @@ class DemoHandler(GuardedHandler):
         return self.json(self.engine.receipt("position_close", {"symbol": symbol}))
 
 
-def build(base_dir, port, engine=None, host="127.0.0.1"):
+def _analysis_response(snapshot):
+    payload = dict(snapshot)
+    payload["source"] = "DEMO"
+    context = None
+    try:
+        if isinstance(payload.get("frames"), dict):
+            context = public_research_context(payload)
+    except Exception:
+        context = None
+    connector = antigravity_route(context or {})
+    connector.update({
+        "protocol_id": "AGY",
+        "display_name": "Antigravity",
+        "version": "1.4.2",
+        "enabled": False,
+        "status": "disabled",
+        "reason": "connector_disabled",
+        "context_ready": context is not None and
+                         len(context["frames"]) == len(CANONICAL_INTERVALS),
+        "frame_count": len(context["frames"]) if context is not None else 0,
+        "research_request_enabled": False,
+        "native_invocation_available": False,
+        "context": None,
+    })
+    payload["antigravity"] = connector
+    return payload
+
+
+def build(base_dir, port, engine=None, host="127.0.0.1", analysis_service=None):
     """建立 DEMO 伺服器（不啟動迴圈）；回 (httpd, engine)。"""
     eng = engine or DemoEngine(port=port)
+    service = analysis_service or TimeframeService(demo=True, enabled=False)
     _demo["engine"] = eng
+    _demo["analysis_service"] = service
+    _demo["analysis_symbol"] = None
     httpd = make_server(DemoHandler, os.path.join(base_dir, "web"), port, host=host)
     eng.port = DemoHandler.bound_port
+    if analysis_service is None:
+        original_server_close = httpd.server_close
+
+        def close_owned_analysis():
+            try:
+                original_server_close()
+            finally:
+                service.close()
+
+        httpd.server_close = close_owned_analysis
     return httpd, eng
 
 
-def serve(base_dir, port, engine=None):
-    httpd, _eng = build(base_dir, port, engine=engine)
+def serve(base_dir, port, engine=None, analysis_service=None):
+    httpd, _eng = build(base_dir, port, engine=engine,
+                        analysis_service=analysis_service)
     print("DEMO 離線示範：http://127.0.0.1:%d/  （合成資料、無網路、Ctrl+C 停止）"
           % DemoHandler.bound_port)
     try:

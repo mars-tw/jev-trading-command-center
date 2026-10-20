@@ -8,7 +8,7 @@
 <style>
 :root{--bg:#04060c;--panel:rgba(8,12,22,.88);--line:#232a3a;--txt:#dbe4f5;--dim:#8fa2c8;--cyan:#37e0ff;--pink:#ff2ea6;--green:#2dff8f;--red:#ff4d6d;--amber:#ffb020;--violet:#8b5cff}
 *{box-sizing:border-box}
-body{margin:0;background:radial-gradient(1200px 600px at 50% -10%,#101736 0%,var(--bg) 55%);color:var(--txt);font-family:Consolas,"Microsoft JhengHei",monospace;overflow-x:hidden}
+body{margin:0;background:radial-gradient(1200px 600px at 50% -10%,#101736 0%,var(--bg) 55%);color:var(--txt);font-family:Consolas,"Microsoft JhengHei",monospace}
 header{display:flex;align-items:center;gap:16px;padding:8px 14px;border-bottom:1px solid var(--line);background:rgba(5,8,15,.9);flex-wrap:wrap}
 header .ttl{font-size:19px;font-weight:bold;color:#fff}header .ttl b{color:var(--pink)}
 .hstat{border:1px solid var(--line);background:var(--panel);padding:5px 10px;min-width:118px}
@@ -86,6 +86,9 @@ body.noanim *,body.noanim *::before,body.noanim *::after{animation:none!importan
 @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
 @media(max-width:1100px){main{grid-template-columns:1fr;grid-template-rows:auto;height:auto}aside.left,footer.bottom{grid-column:1}}
 </style>
+<link rel="stylesheet" href="/core-effects.css">
+<link rel="stylesheet" href="/companion-hud.css">
+<link rel="stylesheet" href="/timeframe-research.css">
 </head>
 <body>
 <header>
@@ -98,7 +101,7 @@ body.noanim *,body.noanim *::before,body.noanim *::after{animation:none!importan
   <div class="hstat"><div class="k">損益（已+未實現）</div><div class="v" id="hPnl">—</div></div>
   <div class="hstat"><div class="k">勝率 / 持倉</div><div class="v" id="hWinPos" style="font-size:14.5px">—</div></div>
   <div class="hstat"><div class="k">第幾輪掃描</div><div class="v" id="hScan">—</div></div>
-  <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+  <div class="headerActions">
     <span id="hClock" style="color:var(--dim);font-size:13px"></span>
     <button id="btnAnim">暫停動畫</button>
     <button id="btnPause">暫停新增交易</button>
@@ -108,7 +111,7 @@ body.noanim *,body.noanim *::before,body.noanim *::after{animation:none!importan
 </header>
 <main>
   <aside class="left">
-    <div class="panel"><h3>行情掃描 · 即時榜（前 12）</h3><div id="feedMeta" style="font-size:12px;color:var(--dim)">連線中…</div><div id="tickRows"></div></div>
+    <div class="panel" id="marketPanel" tabindex="-1"><h3>行情掃描 · 即時榜（前 12）</h3><div id="feedMeta" style="font-size:12px;color:var(--dim)">連線中…</div><div id="tickRows"></div></div>
     <div class="panel"><h3>即時分類（前 48 檔）</h3>
       <div class="clsbar"><div id="cbL" style="background:var(--green)"></div><div id="cbS" style="background:var(--red)"></div><div id="cbW" style="background:#3a4666"></div></div>
       <div id="clsTxt" style="font-size:12.5px">—</div>
@@ -117,11 +120,12 @@ body.noanim *,body.noanim *::before,body.noanim *::after{animation:none!importan
     <div class="panel" style="flex:1"><h3>系統正在做的事（即時說明）</h3><div id="taskFeed" style="font-size:12.5px;line-height:1.65;color:#c7d5f2">等待資料…</div></div>
   </aside>
   <section class="center">
-    <div class="torusWrap">
+    <div class="coreStageHeading"><strong>JEV / ORBITAL ENGINE</strong><div id="coreLabSlot"><button id="strategyLabButton" type="button" disabled>策略實驗室</button><span id="coreLabState">未連線</span></div></div>
+    <div class="torusWrap" id="jevPanel" tabindex="-1">
       <canvas id="ringCv" height="430"></canvas>
       <div id="corePulse"><img id="cpImg" src="/assets/pulse-orb.svg" alt=""><span id="cpRing"></span></div>
       <div id="jcRing"></div>
-      <div id="jevCore"><div class="t">JEV 決 策 核 心</div><div id="jcStatus">待命</div><div id="jcMeta">尚無決策紀錄</div></div>
+      <div id="jevCore" data-expanded="false" aria-label="JEV 決策狀態"><div class="t">JEV CORE</div><div id="jcStatus" role="status" aria-live="polite">待命</div><button id="coreDetailsToggle" type="button" aria-expanded="false" aria-controls="jcMeta">決策詳情</button><div id="jcMeta" aria-hidden="true">尚無決策紀錄</div></div><i class="coreFrameMark nw" aria-hidden="true"></i><i class="coreFrameMark ne" aria-hidden="true"></i><i class="coreFrameMark sw" aria-hidden="true"></i><i class="coreFrameMark se" aria-hidden="true"></i>
       <span class="chip" id="chipC" style="left:10px;top:10px">CHOICE —</span>
       <span class="chip" id="chipR" style="right:10px;top:10px">RISK —</span>
       <span class="chip" id="chipG" style="right:10px;bottom:10px">GATE —</span>
@@ -137,23 +141,26 @@ body.noanim *,body.noanim *::before,body.noanim *::after{animation:none!importan
   <aside class="right">
     <div class="panel"><h3>JEV 最新決策</h3><div id="decCard" style="font-size:12.5px;line-height:1.6">尚無決策</div></div>
     <div class="panel"><h3>六模型工位（分析中會亮燈）</h3><div id="seatRows"></div></div>
-    <div class="panel"><h3>風控 / 凱莉艙位</h3><div id="riskBox" style="font-size:12.5px;line-height:1.65">—</div></div>
-    <div class="panel"><h3>持倉 / 未完訂單</h3><div id="posRows" style="font-size:12px"></div></div>
+    <div class="panel" id="riskPanel" tabindex="-1"><h3>風控 / 凱莉艙位</h3><div id="riskBox" style="font-size:12.5px;line-height:1.65">—</div></div>
+    <div class="panel" id="positionsPanel" tabindex="-1"><h3>持倉 / 未完訂單</h3><div id="posRows" style="font-size:12px"></div></div>
   </aside>
-  <footer class="bottom panel">
+  <footer class="bottom panel" id="eventsPanel" tabindex="-1">
     <h3 style="margin-bottom:4px">即時事件流（系統真的在做事的紀錄）</h3>
     <div id="evLog"></div>
   </footer>
 </main>
+<aside id="companionHud" class="companion-hud is-collapsed" aria-label="模型夥伴狀態"></aside>
 <canvas id="eqCv" width="10" height="10" style="display:none"></canvas>
 <canvas id="plasmaCv" width="10" height="10" style="display:none"></canvas>
 <script>window.__vizMode="show";</script>
 <!-- 本機 three.js 0.186.1（MIT，見 web/vendor/three/LICENSE）：離線可用，沒有任何 CDN 連線 -->
 <script type="importmap">{"imports":{"three":"/vendor/three/build/three.module.js","three/addons/":"/vendor/three/examples/jsm/"}}</script>
-<script type="module" src="/three-viz.js?v=17"></script>
+<script type="module" src="/three-viz.js"></script>
 <!-- 伺服器旗標必須在 line-workers.js 之前載入；靜態開啟時沒有這支，旗標視為 false -->
 <script src="/api/bootstrap.js"></script>
-<script src="/line-workers.js?v=4"></script>
+<script src="/line-workers.js"></script>
+<script src="/companion-hud.js"></script>
+<script src="/timeframe-research.js"></script>
 <script>
 const $=id=>document.getElementById(id);
 // 伺服器旗標：只有 DEMO 伺服器的 /api/bootstrap.js 會把 __JEV_DEMO__ 設成 true。
@@ -163,8 +170,16 @@ $("hModeTag").textContent=DEMO
   ?"DEMO 合成資料 · 無網路 · DEMO agents 8 / 真實 CLI 0"
   :"真實公開行情 · 紙上交易（PaperBroker 模擬成交）";
 const fmt=(n,d=2)=>n==null||isNaN(n)?"—":Number(n).toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d});
-const esc=t=>String(t??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
-let S=null,prevPrices={},evSeen=new Set(),lastScan=-1,lastDecSig="",pausedNew=false;
+const esc=t=>String(t??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+const txt=t=>String(t??"");
+const shortSymbol=t=>txt(t).replace(/USDT/g,"");
+const finite=(v,fallback=0,min=-1e12,max=1e12)=>{const n=Number(v);return Number.isFinite(n)?Math.max(min,Math.min(max,n)):fallback;};
+const pct=v=>finite(finite(v)*100,0,0,100);
+function clearNode(node){while(node&&node.firstChild)node.removeChild(node.firstChild);}
+function addNode(parent,tag,text,className){const node=document.createElement(tag);if(className)node.className=className;node.textContent=txt(text);parent.appendChild(node);return node;}
+function setTextLines(node,lines){clearNode(node);lines.forEach((line,i)=>{if(i)node.appendChild(document.createElement("br"));node.appendChild(document.createTextNode(txt(line)));});}
+window.__stageSafetyHooks={escapeHTML:esc,finitePct:pct};
+let S=null,prevPrices=new Map(),evSeen=new Set(),lastScan=-1,lastDecSig="",pausedNew=false;
 const SEATS=[["grok","GROK"],["claude","CLAUDE"],["muse","MUSE"],["gpt","CODEX"],["qwen","QWEN"],["gemini","AGY"]];
 const DEC_TXT={JEV_WAIT:"JEV 決定等待",NO_JEV_DECISION:"未取得 JEV 決策",RISK_REJECTED:"風控拒絕",PLAN_INVALIDATED:"計畫已失效",JEV_ACTION_SELECTED:"JEV 已選中計畫"};
 const TASKS={feed:"行情員：接收全市場行情並更新關注清單",strategy:"策略分析員：檢查 15m MACD 交叉與濾網條件",sizer:"部位計算員：以凱莉值計算艙位與資金占用",risk:"風控員：檢查剎車、保證金與曝險（只能拒絕）",exec:"交易執行員：送出模擬委託並追蹤成交回報",position:"持倉管理員：追蹤持倉、停損停利與未實現損益",records:"紀錄員：整理成交、費用與損益紀錄",control:"總控：協調各模組與策略狀態"};
@@ -191,7 +206,7 @@ function spawnPulse(pathId,filter,onArrive){
   if(!pRAF)pRAF=requestAnimationFrame(tickPulses);
 }
 function tickPulses(){
-  pRAF=0;const keep=[];
+  pRAF=0;if(document.hidden||document.body.classList.contains("noanim"))return;const keep=[];
   for(const p of pulses){p.t+=0.045;
     if(p.t>=1){p.img.remove();if(p.onArrive)p.onArrive();continue;}
     const pt=p.path.getPointAtLength(p.len*p.t);
@@ -222,11 +237,11 @@ function paintNodes(s){
   set("feed","on",`第 ${s.scan_count??"—"} 輪 · ${(s.feed&&s.feed.age_seconds)!=null?s.feed.age_seconds+" 秒":"—"}`);
   set("cls","on",`多 ${nL} · 空 ${nS} · 望 ${Math.max(0,lr.length-nL-nS)}`);
   const c0=(s.candidates||[])[0];
-  set("cand",c0&&c0.decision_status==="NO_JEV_DECISION"?"bad":"",c0?c0.symbol.replace("USDT","")+" "+(c0.macd_side||c0.rule_direction||""):"等 MACD 交叉");
+  set("cand",c0&&c0.decision_status==="NO_JEV_DECISION"?"bad":"",c0?shortSymbol(c0.symbol)+" "+txt(c0.macd_side||c0.rule_direction||""):"等 MACD 交叉");
   set("models",JC.busy?"warn":"",JC.busy?"分析中…":((s.reviews||[])[0]?((s.reviews[0].symbol||"")+" 已分析"):"待觸發"));
   set("jev",JC.busy?"warn":LD&&(LD.status==="RISK_REJECTED"||LD.status==="NO_JEV_DECISION")?"bad":LD?"on":"",JC.busy?"決策中…":LD?(DEC_TXT[LD.status]||LD.status):"待命");
   const R=s.risk||{};set("risk",R.brake?"bad":"on",R.brake?"剎車中":"保證金 "+fmt(R.margin_pct,1)+"%");
-  const o0=(s.orders||[])[0];set("exec",o0?"on":"",o0?o0.id+" "+o0.status:"尚無訂單");
+  const o0=(s.orders||[])[0];set("exec",o0?"on":"",o0?txt(o0.id)+" "+txt(o0.status):"尚無訂單");
   ["feed-cls","cls-cand","cand-models","models-jev","jev-risk","risk-exec"].forEach(k=>{const p=$("pe-"+k);if(p)p.setAttribute("class","pedge on");});
 }
 // ---- 主渲染 ----
@@ -245,13 +260,18 @@ function render(s){
   $("feedMeta").textContent=`連線正常 · ${(s.feed&&s.feed.symbols)||0} 對 · 延遲 ${(s.feed&&s.feed.age_seconds)!=null?s.feed.age_seconds:"—"} 秒 · 掃描第 ${s.scan_count??"—"} 輪`;
   // 即時榜 + 漲跌閃爍
   const rows=(s.live_rows||[]).slice(0,12);
-  $("tickRows").innerHTML=rows.map(r=>`<div class="tick" data-sym="${r.symbol}"><b>${r.symbol.replace("USDT","")}</b><span>$${fmt(r.price,r.price<2?5:3)}</span><span class="${r.change_pct_24h>=0?"long":"short"}">${r.change_pct_24h>=0?"+":""}${fmt(r.change_pct_24h)}%</span><span>${fmt(r.live_score,2)}</span></div>`).join("");
-  rows.forEach(r=>{const old=prevPrices[r.symbol];const el=document.querySelector(`.tick[data-sym="${r.symbol}"]`);
-    if(el&&old!=null&&r.price!==old)el.classList.add(r.price>old?"flashUp":"flashDn");prevPrices[r.symbol]=r.price;});
+  const tickHost=$("tickRows");clearNode(tickHost);
+  rows.forEach(r=>{const key=txt(r&&r.symbol),old=prevPrices.get(key),el=document.createElement("div");
+    el.className="tick";el.dataset.sym=key;
+    addNode(el,"b",shortSymbol(key));addNode(el,"span","$"+fmt(r.price,r.price<2?5:3));
+    addNode(el,"span",(r.change_pct_24h>=0?"+":"")+fmt(r.change_pct_24h)+"%",r.change_pct_24h>=0?"long":"short");
+    addNode(el,"span",fmt(r.live_score,2));
+    if(old!=null&&r.price!==old)el.classList.add(r.price>old?"flashUp":"flashDn");
+    prevPrices.set(key,r.price);tickHost.appendChild(el);});
   const lr48=(s.live_rows||[]).slice(0,48);
   const nL=lr48.filter(r=>r.live_direction==="long").length,nS=lr48.filter(r=>r.live_direction==="short").length,nW=Math.max(0,lr48.length-nL-nS),tot=Math.max(1,lr48.length);
-  $("cbL").style.width=(nL/tot*100)+"%";$("cbS").style.width=(nS/tot*100)+"%";$("cbW").style.width=(nW/tot*100)+"%";
-  $("clsTxt").innerHTML=`<span class="long">做多 ${nL}</span> · <span class="short">做空 ${nS}</span> · 觀望 ${nW}`;
+  $("cbL").style.width=finite(nL/tot*100,0,0,100)+"%";$("cbS").style.width=finite(nS/tot*100,0,0,100)+"%";$("cbW").style.width=finite(nW/tot*100,0,0,100)+"%";
+  const clsHost=$("clsTxt");clearNode(clsHost);addNode(clsHost,"span","做多 "+nL,"long");clsHost.appendChild(document.createTextNode(" · "));addNode(clsHost,"span","做空 "+nS,"short");clsHost.appendChild(document.createTextNode(" · 觀望 "+nW));
   $("sigStats").textContent=`即時訊號 ${s.live_signals||0} 個 · 濾網累計擋下 ${s.filtered_total||0} 筆 · 深層候選 ${(s.candidates||[]).length} 檔`;
   // 任務說明（依角色即時狀態）
   const working=(s.roles||[]).filter(r=>r.status==="working");
@@ -259,16 +279,16 @@ function render(s){
     +`<div style="margin-top:6px;color:var(--dim)">決策鏈：候選 → 六模型分析 → JEV 最終決策 → 風控 → 執行。沒有 JEV 決策就不下單。</div>`;
   // JEV 中央牌 + 晶片
   const lat=J.latency_ms!=null?(J.latency_ms/1000).toFixed(1)+" 秒":null;
-  let st,meta,col="#fff";
-  if(JC.busy){st="決策中…";col="#ffb020";meta="六模型分析中 → 等 JEV 最終選擇<br>（沒有 JEV 決策，不會下單）";}
-  else if(!LD){st=JC.status==="READY"?"待命":"未接通";col=JC.status==="READY"?"#fff":"#ff4d6d";meta=`JEV 狀態：${JC.status||"UNVERIFIED"}<br>等 MACD 交叉產生候選，才會請 JEV 決策`;}
-  else if(LD.status==="JEV_WAIT"){st="JEV 決定等待";meta=`${LD.symbol} · ${LD.decision_id}${lat?" · 耗時 "+lat:""}<br>JEV 主動選 WAIT，本次不交易（非斷線）`;}
-  else if(LD.status==="NO_JEV_DECISION"){st="未取得 JEV 決策";col="#ff4d6d";meta=`${LD.symbol} · ${(LD.reasons||[])[0]||"無回覆"}<br>缺答 ≠ 等待，本次禁止下單`;}
-  else if(LD.status==="RISK_REJECTED"){st="風控拒絕";col="#ff4d6d";meta=`JEV 選中 ${LD.plan_id}（${LD.symbol}）<br>${(LD.risk_reasons||[]).join("；")}`;}
-  else if(LD.status==="PLAN_INVALIDATED"){st="計畫已失效";col="#ffb020";meta=`${LD.plan_id}（${LD.symbol}）<br>${(LD.risk_reasons||[]).join("；")||"重驗未過"}`;}
-  else if(LD.status==="JEV_ACTION_SELECTED"){st="JEV 已選中計畫";col="#2dff8f";meta=`${LD.plan_id}（${LD.symbol}）· ${LD.decision_id}${lat?" · 耗時 "+lat:""}<br>${LD.final_outcome==="ORDER_SUBMITTED"?"已送出模擬委託 "+(LD.intent_id||""):"等風控檢查"}`;}
-  else{st=LD.status||"—";meta=LD.symbol||"";}
-  const jcS=$("jcStatus");jcS.textContent=st;jcS.style.color=col;$("jcMeta").innerHTML=meta;
+  let st,meta=[],col="#fff";
+  if(JC.busy){st="決策中…";col="#ffb020";meta=["六模型分析中 → 等 JEV 最終選擇","（沒有 JEV 決策，不會下單）"];}
+  else if(!LD){st=JC.status==="READY"?"待命":"未接通";col=JC.status==="READY"?"#fff":"#ff4d6d";meta=["JEV 狀態："+txt(JC.status||"UNVERIFIED"),"等 MACD 交叉產生候選，才會請 JEV 決策"];}
+  else if(LD.status==="JEV_WAIT"){st="JEV 決定等待";meta=[txt(LD.symbol)+" · "+txt(LD.decision_id)+(lat?" · 耗時 "+lat:""),"JEV 主動選 WAIT，本次不交易（非斷線）"];}
+  else if(LD.status==="NO_JEV_DECISION"){st="未取得 JEV 決策";col="#ff4d6d";meta=[txt(LD.symbol)+" · "+txt((LD.reasons||[])[0]||"無回覆"),"缺答 ≠ 等待，本次禁止下單"];}
+  else if(LD.status==="RISK_REJECTED"){st="風控拒絕";col="#ff4d6d";meta=["JEV 選中 "+txt(LD.plan_id)+"（"+txt(LD.symbol)+"）",(LD.risk_reasons||[]).map(txt).join("；")];}
+  else if(LD.status==="PLAN_INVALIDATED"){st="計畫已失效";col="#ffb020";meta=[txt(LD.plan_id)+"（"+txt(LD.symbol)+"）",(LD.risk_reasons||[]).map(txt).join("；")||"重驗未過"];}
+  else if(LD.status==="JEV_ACTION_SELECTED"){st="JEV 已選中計畫";col="#2dff8f";meta=[txt(LD.plan_id)+"（"+txt(LD.symbol)+"）· "+txt(LD.decision_id)+(lat?" · 耗時 "+lat:""),LD.final_outcome==="ORDER_SUBMITTED"?"已送出模擬委託 "+txt(LD.intent_id||""):"等風控檢查"];}
+  else{st=txt(LD.status||"—");meta=[txt(LD.symbol||"")];}
+  const jcS=$("jcStatus");jcS.textContent=st;jcS.style.color=col;setTextLines($("jcMeta"),meta);
   $("chipC").textContent="CHOICE · JEV 決策："+st;
   $("chipR").textContent="RISK · 風控："+(R.brake?"剎車中":R.suggest_pause_entries?"建議暫停新倉":"正常 · 保證金 "+fmt(R.margin_pct,1)+"%");
   const lo=(s.orders||[])[0];
@@ -280,18 +300,43 @@ function render(s){
   $("ndN").textContent="下一步："+(JC.busy?"等六模型分析與 JEV 回覆":LD&&LD.status==="JEV_WAIT"?"本次不交易，等下一個 MACD 交叉":LD&&LD.status==="NO_JEV_DECISION"?"JEV 恢復前禁止新下單，持倉保護照常":"等 MACD 交叉產生候選 → 送 JEV 決策");
   // JEV 決策卡
   const probs=J.probabilities||{};
-  const pExec=probs[LD?("EXEC_"+LD.plan_id):""]??null,pWait=probs.WAIT??null;
-  $("decCard").innerHTML=!LD?(JC.busy?"決策進行中…":"尚無決策紀錄"):
-    `<div style="font-size:15px"><b style="color:${col}">${st}</b> <span style="color:var(--dim)">${LD.decision_id||""}</span></div>
-     <div>標的 <b style="color:#fff">${LD.symbol||"—"}</b> · 計畫 ${LD.plan_id||"—"} · 選擇 <b style="color:#fff">${LD.selected_option||"（無）"}</b></div>
-     ${pExec!=null?`<div>執行計畫機率 ${fmt(pExec*100,0)}%<div class="pbar"><i style="width:${pExec*100}%"></i></div>WAIT 機率 ${fmt((pWait??0)*100,0)}%<div class="pbar"><i style="width:${(pWait??0)*100}%;background:#3a4666"></i></div>`:""}
-     <div>實際模型 ${esc(J.model||"—")} · 耗時 ${lat||"—"} · 信心 ${J.confidence!=null?fmt(J.confidence,2):"—"}（非勝率）</div>
-     <div>回執 ${LD.used_intent_id?"已使用 "+LD.used_intent_id+"（不可重用）":"未使用"}${LD.final_outcome?" · 結果 "+LD.final_outcome:""} · JEV 異常累計 ${JC.blocked_count||0} 次</div>
-     ${(()=>{const sh=LD.shadow_local;if(!sh)return `<div>開源影子決策：<span style="color:var(--dim)">等待本機模型…</span></div>`;
-       if(sh.status!=="OK")return `<div>開源影子決策：<span class="warn">未連接（${esc(sh.error||sh.status)}）</span> <span style="color:var(--dim)">本機端點尚無模型在跑</span></div>`;
-       const ag=(s.decisions||[]).filter(d=>d.shadow_local&&d.shadow_local.status==="OK");
-       const agreeN=ag.filter(d=>d.shadow_agree).length;
-       return `<div>開源影子決策（本機 ${esc(sh.model||"")}）：<b style="color:#fff">${esc(sh.choice||"")}</b> · 與 JEV <b class="${LD.shadow_agree?"long":"warn"}">${LD.shadow_agree?"一致":"分歧"}</b> · ${(sh.latency_ms/1000).toFixed(1)} 秒${ag.length?` · 累計對照 ${ag.length} 次、同意 ${agreeN} 次`:""}<br><span style="color:var(--dim)">${esc(sh.reason||"")}（影子僅對照，不下單）</span></div>`;})()}`;
+  const execKey=LD?("EXEC_"+txt(LD.plan_id)):"";
+  const pExec=Object.prototype.hasOwnProperty.call(probs,execKey)?probs[execKey]:null;
+  const pWait=Object.prototype.hasOwnProperty.call(probs,"WAIT")?probs.WAIT:null;
+  const decHost=$("decCard");clearNode(decHost);
+  if(!LD){decHost.textContent=JC.busy?"決策進行中…":"尚無決策紀錄";}
+  else{
+    const head=addNode(decHost,"div","");head.style.fontSize="15px";
+    const headStatus=addNode(head,"b",st);headStatus.style.color=col;
+    head.appendChild(document.createTextNode(" "));
+    const headId=addNode(head,"span",LD.decision_id||"");headId.style.color="var(--dim)";
+    const choice=addNode(decHost,"div","");choice.appendChild(document.createTextNode("標的 "));
+    const choiceSymbol=addNode(choice,"b",LD.symbol||"—");choiceSymbol.style.color="#fff";
+    choice.appendChild(document.createTextNode(" · 計畫 "+txt(LD.plan_id||"—")+" · 選擇 "));
+    const choiceValue=addNode(choice,"b",LD.selected_option||"（無）");choiceValue.style.color="#fff";
+    if(pExec!=null){
+      const prob=addNode(decHost,"div","執行計畫機率 "+fmt(pct(pExec),0)+"%");
+      const execBar=addNode(prob,"div","","pbar"),execFill=document.createElement("i");execFill.style.width=pct(pExec)+"%";execBar.appendChild(execFill);
+      prob.appendChild(document.createTextNode("WAIT 機率 "+fmt(pct(pWait??0),0)+"%"));
+      const waitBar=addNode(prob,"div","","pbar"),waitFill=document.createElement("i");waitFill.style.width=pct(pWait??0)+"%";waitFill.style.background="#3a4666";waitBar.appendChild(waitFill);
+    }
+    addNode(decHost,"div","實際模型 "+txt(J.model||"—")+" · 耗時 "+(lat||"—")+" · 信心 "+(J.confidence!=null?fmt(J.confidence,2):"—")+"（非勝率）");
+    addNode(decHost,"div","回執 "+(LD.used_intent_id?"已使用 "+txt(LD.used_intent_id)+"（不可重用）":"未使用")+(LD.final_outcome?" · 結果 "+txt(LD.final_outcome):"")+" · JEV 異常累計 "+finite(JC.blocked_count,0,0,999999)+" 次");
+    const sh=LD.shadow_local,shadow=addNode(decHost,"div","開源影子決策：");
+    if(!sh){const wait=addNode(shadow,"span","等待本機模型…");wait.style.color="var(--dim)";}
+    else if(sh.status!=="OK"){
+      addNode(shadow,"span","未連接（狀態未驗證）","warn");
+      const noModel=addNode(shadow,"span"," 本機端點尚無模型在跑");noModel.style.color="var(--dim)";
+    }else{
+      const ag=(s.decisions||[]).filter(d=>d&&d.shadow_local&&d.shadow_local.status==="OK"),agreeN=ag.filter(d=>d.shadow_agree).length;
+      shadow.appendChild(document.createTextNode("（本機 "+txt(sh.model||"")+"）："));
+      const shadowChoice=addNode(shadow,"b",sh.choice||"");shadowChoice.style.color="#fff";
+      shadow.appendChild(document.createTextNode(" · 與 JEV "));
+      addNode(shadow,"b",LD.shadow_agree?"一致":"分歧",LD.shadow_agree?"long":"warn");
+      shadow.appendChild(document.createTextNode(" · "+fmt(finite(sh.latency_ms)/1000,1)+" 秒"+(ag.length?" · 累計對照 "+ag.length+" 次、同意 "+agreeN+" 次":"")));
+      shadow.appendChild(document.createElement("br"));const reason=addNode(shadow,"span",txt(sh.reason||"")+"（影子僅對照，不下單）");reason.style.color="var(--dim)";
+    }
+  }
   // 六模型工位
   const rev=(s.reviews||[])[0]||null,votes=(rev&&rev.votes)||{};
   window._seatVotes=window._seatVotes||{};
@@ -302,19 +347,19 @@ function render(s){
     const cls=dis?"dis":m.status==="UNAVAILABLE"?"off":work?"work":"ready";
     const vtxt=dis?"已關閉（使用者）":work?"批次分析…":v?(v.decision==="unavailable"?"未連接":v.decision+(v.latency_ms!=null?" · "+(v.latency_ms/1000).toFixed(1)+"秒":"")):"待分析";
     const changed=window._seatVotes[k]!==undefined&&window._seatVotes[k]!==vtxt;window._seatVotes[k]=vtxt;
-    return `<div class="seat${work?" working":""}" id="seat-${k}"><span class="dot ${cls}"></span><b style="color:#fff">${nm}</b><span class="${changed?"pop":""}">${vtxt}</span><span style="color:var(--dim)">${esc(m.model||"")}</span></div>`;}).join("");
+    return `<div class="seat${work?" working":""}" id="seat-${k}"><span class="dot ${cls}"></span><b style="color:#fff">${nm}</b><span class="${changed?"pop":""}">${esc(vtxt)}</span><span style="color:var(--dim)">${esc(m.model||"")}</span></div>`;}).join("");
   // 風控/凱莉
   $("riskBox").innerHTML=`剎車：<b class="${R.brake?"short":"long"}">${R.brake?"剎車中":"正常"}</b> · 保證金 ${fmt(R.margin_pct,1)}% · 回撤 ${fmt(R.drawdown_pct,1)}% · 爆倉距 ${R.worst_liq_distance_pct!=null?fmt(R.worst_liq_distance_pct,0)+"%":"—"}<br>
-    凱莉：${esc(K.state_text||"—")}<br>建議艙位 <b style="color:#fff">$${fmt(K.suggested_notional,0)}</b> · 期望/筆 ${K.expectancy_usd!=null?"$"+fmt(K.expectancy_usd):"—"} · 樣本 ${K.samples??"—"} 筆`;
+    凱莉：${esc(K.state_text||"—")}<br>建議艙位 <b style="color:#fff">$${fmt(K.suggested_notional,0)}</b> · 期望/筆 ${K.expectancy_usd!=null?"$"+fmt(K.expectancy_usd):"—"} · 樣本 ${K.samples==null?"—":finite(K.samples,0,0,999999)} 筆`;
   // 持倉/訂單
-  const pos=(a.positions||[]).map(p=>`<div class="posrow"><b style="color:#fff">${p.symbol.replace("USDT","")}</b><span class="${p.side==="long"?"long":"short"}">${p.side}</span><span>$${fmt(p.entry_price,p.entry_price<2?5:3)} → $${fmt(p.mark_price,p.mark_price<2?5:3)}</span><span class="${p.unrealized_pnl>=0?"long":"short"}">${p.unrealized_pnl>=0?"+":""}$${fmt(p.unrealized_pnl)}</span></div>`).join("");
-  const ords=(s.orders||[]).filter(o=>["WAITING_FILL","PARTIALLY_FILLED","PENDING_CONFIRM"].includes(o.status)).map(o=>`<div class="posrow"><b style="color:#fff">${o.id}</b><span>${o.symbol.replace("USDT","")}</span><span>${o.side}</span><span class="warn">${o.status}</span></div>`).join("");
+  const pos=(a.positions||[]).map(p=>`<div class="posrow"><b style="color:#fff">${esc(shortSymbol(p.symbol))}</b><span class="${p.side==="long"?"long":"short"}">${esc(p.side)}</span><span>$${fmt(p.entry_price,p.entry_price<2?5:3)} → $${fmt(p.mark_price,p.mark_price<2?5:3)}</span><span class="${p.unrealized_pnl>=0?"long":"short"}">${p.unrealized_pnl>=0?"+":""}$${fmt(p.unrealized_pnl)}</span></div>`).join("");
+  const ords=(s.orders||[]).filter(o=>["WAITING_FILL","PARTIALLY_FILLED","PENDING_CONFIRM"].includes(o.status)).map(o=>`<div class="posrow"><b style="color:#fff">${esc(o.id)}</b><span>${esc(shortSymbol(o.symbol))}</span><span>${esc(o.side)}</span><span class="warn">${esc(o.status)}</span></div>`).join("");
   $("posRows").innerHTML=(pos||"<div style='color:var(--dim)'>無持倉</div>")+(ords?`<div style="margin-top:5px;color:var(--dim)">未完訂單</div>`+ords:"");
   // 事件流（新事件才加入，最新在上）
   const evs=(s.events||[]);
   let added="";
   for(const e of [...evs].reverse()){const key=(e.time||"")+(e.text||"");
-    if(!evSeen.has(key)){evSeen.add(key);added+=`<div class="ev new"><span style="color:var(--dim)">${(e.time||"").slice(11,19)}</span> ${esc(e.text||"")}</div>`;}}
+    if(!evSeen.has(key)){evSeen.add(key);added+=`<div class="ev new"><span style="color:var(--dim)">${esc(txt(e.time||"").slice(11,19))}</span> ${esc(e.text||"")}</div>`;}}
   if(added){const log=$("evLog");log.innerHTML=added+log.innerHTML;
     while(log.children.length>16)log.removeChild(log.lastChild);}
   paintNodes(s);
@@ -346,14 +391,16 @@ function render(s){
 }
 async function loop(){
   try{const r=await fetch("/api/status",{cache:"no-store"});if(!r.ok)throw new Error("HTTP "+r.status);const s=await r.json();if(s.status!=="ok"){window.LineWorkers?.offline("掃描器暖機中");$("feedMeta").textContent="掃描器暖機中";}else render(s);}
-  catch(e){window.LineWorkers?.offline("即時資料未連線");$("feedMeta").textContent="後端未連線："+e;}
-  setTimeout(loop,1000);
+  catch(e){window.LineWorkers?.offline("即時資料未連線");$("feedMeta").textContent="後端未連線，等待重新連線";}
+  const delay=document.hidden?5000:document.body.classList.contains("noanim")?3000:1000;
+  setTimeout(loop,delay);
 }
-$("btnAnim").onclick=()=>{const b=document.body.classList.toggle("noanim");$("btnAnim").textContent=b?"恢復動畫":"暫停動畫";};
+$("btnAnim").onclick=()=>{const b=document.body.classList.toggle("noanim");$("btnAnim").textContent=b?"恢復動畫":"暫停動畫";if(!b&&pulses.length&&!pRAF)pRAF=requestAnimationFrame(tickPulses);};
 $("btnPause").onclick=async()=>{pausedNew=!pausedNew;
   try{await fetch("/api/control",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:pausedNew?"pause_new":"resume"})});}catch(e){}
   $("btnPause").textContent=pausedNew?"恢復新增交易":"暫停新增交易";};
 setInterval(()=>{const d=new Date();$("hClock").textContent=d.toISOString().slice(11,19)+" UTC";},1000);
+document.addEventListener("visibilitychange",()=>{if(!document.hidden&&pulses.length&&!pRAF&&!document.body.classList.contains("noanim"))pRAF=requestAnimationFrame(tickPulses);});
 // DEMO 專用情境按鈕：只會請伺服器換「合成畫面」，不會呼叫引擎、模型或交易所。
 if(DEMO){
   $("btnPause").title="DEMO：只回合成回執，沒有任何真實交易被暫停或送出";
@@ -366,5 +413,6 @@ if(DEMO){
 }
 loop();
 </script>
+<script src="/strategy-lab.js"></script>
 </body>
 </html>

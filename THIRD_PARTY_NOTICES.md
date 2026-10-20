@@ -15,18 +15,29 @@ Upstream: https://github.com/mrdoob/three.js
 Python and its standard library are separately licensed and are not bundled.
 The real public-market paper mode installs Requests as a separate dependency;
 Requests is licensed under Apache-2.0 (https://github.com/psf/requests).
-Native AI CLIs and external model services are not bundled or relicensed by
-this repository. Follow the terms of the programs and services you enable.
+The owner-password gateway, StrategyLab viewer and ten-timeframe browser panel
+add no bundled third-party runtime dependency or asset.
+
+Native AI CLIs, Antigravity/AGY tooling, MCP servers, plugins and external model
+services are not bundled or relicensed by this repository. Preparing a public
+research context does not grant rights to those tools and is not proof that a
+provider or model ran. Follow the terms of each program and service you enable.
 
 Jev / TypeSafe is an external API dependency. No Jev model, model weights,
 provider credential or right to the TypeSafe service is granted by this
 application's MIT license. See https://docs.typesafe.ai/legal.
 
+Public Binance market data is fetched only in explicitly enabled real research
+mode. Binance data and services are not bundled, owned or relicensed here and
+remain subject to their applicable terms.
+
 ## Original artwork and music
 
-The application pets, walking frames and replacement procedural visual
-elements are original application code covered by the root MIT license.
-Unverified legacy image layers and local private captures were excluded.
+The seven original game-pet PNG atlases in `web/pets-game-v1/`, their animation
+code and the procedural visual elements are included under the root MIT
+license. The atlases contain complete character drawings for each facing,
+walking pose, work pose and expression. Unverified legacy image layers and
+local private captures were excluded.
 
 The showcase soundtrack "Neon Circuit" is an original procedural composition
 and synthesized recording. No existing recording, sample pack, loop,
