@@ -1,5 +1,10 @@
 # JEV Trading Command Center
 
+> [!WARNING]
+> **實測沒有賺錢，請勿用於真錢交易。** 作者在 2026-10-20 至 2026-10-30 用本程式的紙上訓練版（未公開）實測：由 Jev 從候選單裡挑一筆來開，或選擇等待，每筆持有約 3 分鐘，共成交 1,604 筆模擬單。勝率 11.6%，獲利因子 0.11（賺的總額只有賠的總額的 11%）。扣成本前平均每筆 +0.005%，統計上等於零；每筆成本約 0.14%（手續費 0.10%＋滑價 0.04%），扣完就是虧損。Jev 回報的信心高低也和結果無關。本開源版讓 Jev 在「交易計畫」和「WAIT」之間選一個，是同一種用法。
+>
+> **Measured result: no edge. Do not use this for real-money trading.** In the author's own paper test (an unreleased paper-training build of this program, 2026-10-20 to 2026-10-30), Jev picked one candidate trade to open or chose to wait, and each position was held for about 3 minutes. Across 1,604 simulated trades, the win rate was 11.6% and the profit factor was 0.11. The average return before costs was +0.005% per trade, which is statistically zero; with about 0.14% per trade in fees and slippage, the net result was a loss. Jev's reported confidence did not track outcomes. This open-source version uses the same kind of setup: Jev chooses between a trade plan and WAIT.
+
 A paper-trading research application with TypeSafe Jev decisions, an animated 3D command center, model pets, a responsive ten-timeframe research panel, an owner-authenticated remote view, and a local offline demo. The application is open source; the Jev model and external provider services are not included.
 
 這是 **JEV 整合程式的開源版**：保留環狀 3D 首頁、沿線移動的多視角寵物、模型／任務標籤與決策流程。所有交易由程式內的 PaperBroker 模擬，沒有交易所私有下單功能。
